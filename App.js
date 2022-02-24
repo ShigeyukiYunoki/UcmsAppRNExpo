@@ -5,6 +5,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import HomeScreen from "./screens/HomeScreen";
 import UsersScreen from "./screens/UsersScreen";
+import CalendarScreen from "./screens/CalendarScreen";
 import { Ionicons } from "@expo/vector-icons";
 
 export default function App() {
@@ -28,6 +29,15 @@ export default function App() {
           options={{
             tabBarIcon: ({ color, size }) => (
               <Ionicons name="person" size={size} color={color} />
+            ),
+          }}
+        />
+        <Tab.Screen
+          name="カレンダー"
+          component={CalendarScreen}
+          options={{
+            tabBarIcon: ({ color, size }) => (
+              <Ionicons name="calendar" size={size} color={color} />
             ),
           }}
         />
