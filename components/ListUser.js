@@ -1,8 +1,7 @@
-import { StyleSheet, View, Text, Alert, Pressable, Image } from 'react-native'
+import { StyleSheet, View, Text, Image } from 'react-native'
 import React from 'react'
-import Icon from 'react-native-vector-icons/AntDesign';
 
-const ListUser = ({ item, deleteUser}) => {
+const ListUser = ({ item }) => {
   return (
     <View style= {styles.row}>
       <View style = {styles.item}>
@@ -12,9 +11,9 @@ const ListUser = ({ item, deleteUser}) => {
         />
         <Text>{item.name}</Text>
       </View>
-      <Icon name= "delete" size={20} onPress= {() => 
+      {/* <Icon name= "delete" size={20} onPress= {() => 
         deleteUser(item.id)}
-      />
+      /> */}
     </View>
   )
 }
@@ -37,8 +36,6 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     marginRight: 8,
   },
-}
-
-)
+})
 
 export default ListUser

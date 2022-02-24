@@ -4,13 +4,13 @@ import React from 'react'
 const Footer = () => {
   return (
     <View style={styles.footer}>
-      <Text>Footer</Text>
+      <Text></Text>
     </View>
   )
 }
 const styles = StyleSheet.create({
   footer: {
-    height: 90,
+    height: 80,
     backgroundColor: 'lightgreen',
   },
 });
