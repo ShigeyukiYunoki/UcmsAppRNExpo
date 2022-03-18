@@ -12,8 +12,30 @@ import LoginScreen from "./screens/LoginScreen";
 import { Ionicons } from "@expo/vector-icons";
 import { auth } from "./src/firebase";
 import { onAuthStateChanged } from "firebase/auth";
+import * as Notifications from "expo-notifications";
 
 export default function App() {
+
+  useEffect(() => {
+    const requestPermissionsAsync = async () => {
+      const { granted } = await Notifications.getPermissionsAsync();
+      if (granted) {
+        return;
+      }
+
+      await Notifications.requestPermissionsAsync();
+    };
+  return () => requestPermissionsAsync();
+  }, []);
+
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: false,
+      shouldSetBadge: true,
+    }),
+  });
+
   const Tab = createBottomTabNavigator();
   // const Stack = createNativeStackNavigator();
   const [user, setUser] = useState('');
