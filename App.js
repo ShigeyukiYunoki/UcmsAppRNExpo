@@ -11,10 +11,73 @@ import RegisterScreen from "./screens/RegisterScreen";
 import LoginScreen from "./screens/LoginScreen";
 import { Ionicons } from "@expo/vector-icons";
 import { auth } from "./src/firebase";
+import { db } from "./src/firebase";
+import { getDocs, collection } from "firebase/firestore/lite";
 import { onAuthStateChanged } from "firebase/auth";
+import { signInAnonymously } from "firebase/auth";
 import * as Notifications from "expo-notifications";
 
+
 export default function App() {
+  const [user, setUser] = useState("");
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        // 匿名ログインする
+        signInAnonymously(auth);
+      } else {
+          // console.log(user);
+          // db.collection("users")
+          // .get()
+          // .then((querySnapshot) => {
+          //   querySnapshot.forEach((doc) => {
+          //     console.log(`${doc.id} => ${doc.data()}`);
+          //   });
+          // });
+          const user = auth.currentUser;
+         
+          const usersCollectionRef = collection(db, "users");
+          getDocs(usersCollectionRef).then((snapshot) => {
+            snapshot.docs.map((doc) => {
+               if (user.uid === doc.data().uid ) {
+                 console.log(user.uid);
+               }
+            });
+          });
+        // var userDoc = await firebase
+        //   .firestore()
+        //   .collection("users")
+        //   .doc(user.uid)
+        //   .get();
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // firebase.auth().onAuthStateChanged(async (user) => {
+  //   // 未ログイン時
+  //   if (!user) {
+  //     // 匿名ログインする
+  //     firebase.auth().signInAnonymously();
+  //   }
+  //   // ログイン時
+  //   else {
+  //     // ログイン済みのユーザー情報があるかをチェック
+  //     var userDoc = await firebase
+  //       .firestore()
+  //       .collection("users")
+  //       .doc(user.uid)
+  //       .get();
+  //     // if (!userDoc.exists) {
+  //     //   // Firestore にユーザー用のドキュメントが作られていなければ作る
+  //     //   await userDoc.ref.set({
+  //     //     screen_name: user.uid,
+  //     //     display_name: "名無しさん",
+  //     //     created_at: firebase.firestore.FieldValue.serverTimestamp(),
+  //     //   });
+  //     // }
+  //   }
+  // });
 
   useEffect(() => {
     const requestPermissionsAsync = async () => {
@@ -25,7 +88,7 @@ export default function App() {
 
       await Notifications.requestPermissionsAsync();
     };
-  return () => requestPermissionsAsync();
+    return () => requestPermissionsAsync();
   }, []);
 
   Notifications.setNotificationHandler({
@@ -38,18 +101,18 @@ export default function App() {
 
   const Tab = createBottomTabNavigator();
   // const Stack = createNativeStackNavigator();
-  const [user, setUser] = useState('');
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        console.log(user);
-        setUser(user);
-      } else {
-        setUser('');
-      }
-    });
-    return () => unsubscribe();
-  }, []);
+  // const [user, setUser] = useState('');
+  // useEffect(() => {
+  //   const unsubscribe = onAuthStateChanged(auth, (user) => {
+  //     if (user) {
+  //       console.log(user);
+  //       setUser(user);
+  //     } else {
+  //       setUser('');
+  //     }
+  //   });
+  //   return () => unsubscribe();
+  // }, []);
 
   return (
     <NavigationContainer>

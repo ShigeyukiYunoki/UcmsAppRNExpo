@@ -1,8 +1,10 @@
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import React, { useEffect } from "react";
 import { auth } from "../src/firebase";
-import { signOut } from "firebase/auth";
+import { signOut, currentUser } from "firebase/auth";
 import * as Notifications from "expo-notifications";
+import { db } from "../src/firebase";
+import { getDocs, collection, query, where } from "firebase/firestore/lite";
 
 const HomeScreen = () => {
   const handleLogout = () => {
@@ -15,6 +17,20 @@ const HomeScreen = () => {
       });
   };
 
+  const user = auth.currentUser;
+
+  const usersCollectionRef = collection(db, "users");
+  getDocs(usersCollectionRef).then((snapshot) => {
+    snapshot.docs.map((doc) => {
+      if (user.uid === doc.data().uid) {
+        const med = doc.data().taking_medicine_at;
+        console.log(med);
+      }
+    });
+  });
+  // const q = query(collection(db, "users"), where("uid", user.uid));
+
+
   const scheduleNotificationAsync = async () => {
     await Notifications.scheduleNotificationAsync({
       content: {
@@ -23,7 +39,8 @@ const HomeScreen = () => {
         subtitle: "今日の服薬はおわりましたか？",
       },
       trigger: {
-        hour: 21,
+        hour: med,
+        minute: med,
         repeats: true,
       },
     });
