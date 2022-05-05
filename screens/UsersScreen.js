@@ -1,10 +1,8 @@
-import { View, Text, StyleSheet, FlatList } from "react-native";
+import { View, StyleSheet, FlatList } from "react-native";
 import React, { useState, useEffect } from "react";
 import ListUser from "../components/ListUser";
 import "react-native-get-random-values";
-import { v4 as uuidv4 } from "uuid";
-import axios from "axios";
-import { REACT_APP_DEV_API_URL } from "@env";
+import {REACT_APP_DEV_API_URL_USERS} from "@env";
 
 const UsersScreen = () => {
   const [users, setUsers] = useState([]);
@@ -23,7 +21,7 @@ const UsersScreen = () => {
 
   useEffect(() => {
     const getUser = async () => {
-      const res = await fetch(REACT_APP_DEV_API_URL);
+      const res = await fetch(REACT_APP_DEV_API_URL_USERS);
       const users = await res.json();
       setUsers(users);
     };
