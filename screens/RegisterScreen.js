@@ -8,16 +8,14 @@ import {
 } from "react-native";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../src/firebase";
-// import AsyncStorage from "@react-native-storage/async-storage";
 
 const RegisterScreen = () => {
-  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   
   const handleRegister = async () => {
     try {
-      const user = await createUserWithEmailAndPassword(auth, name, email, password);
+      const user = await createUserWithEmailAndPassword(auth, email, password);
       console.log(user);
     } catch (error) {
       console.log(error.message);
@@ -34,21 +32,6 @@ const RegisterScreen = () => {
       }}
     >
       <Text style={{ fontSize: 20, marginBottom: 20 }}>ユーザ登録画面</Text>
-      <View style={{ marginBottom: 20 }}>
-        <TextInput
-          style={{
-            width: 250,
-            borderWidth: 1,
-            padding: 5,
-            borderColor: "gray",
-          }}
-          onChangeText={setName}
-          value={name}
-          placeholder="名前を入力してください"
-          autoCapitalize="none"
-          autoCorrect={false}
-        />
-      </View>
       <View style={{ marginBottom: 20 }}>
         <TextInput
           style={{
