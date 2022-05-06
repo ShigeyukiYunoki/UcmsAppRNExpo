@@ -8,6 +8,7 @@ import {
   KeyboardAvoidingView,
 } from "react-native";
 import { auth } from "../src/firebase";
+import { useNavigation } from "@react-navigation/native";
 
 const LoginScreen = () => {
   const [email, setEmail] = useState('');
@@ -20,6 +21,8 @@ const LoginScreen = () => {
       console.log(error.message);
     }
   };
+
+  const navigation = useNavigation();
 
   return (
     <KeyboardAvoidingView
@@ -71,6 +74,12 @@ const LoginScreen = () => {
         // disabled={!email || !password}
       >
         <Text style={{ color: "white" }}>ログイン</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={{ marginTop: 10 }}
+        onPress={() => navigation.navigate("Register")}
+      >
+        <Text>ユーザ登録はこちら</Text>
       </TouchableOpacity>
     </KeyboardAvoidingView>
   );
