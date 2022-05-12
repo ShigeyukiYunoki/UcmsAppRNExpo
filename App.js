@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {  Button } from "react-native";
+import { Button, NativeModules } from "react-native";
 import "react-native-get-random-values";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
@@ -13,13 +13,19 @@ import { onAuthStateChanged } from "firebase/auth";
 import * as Notifications from "expo-notifications";
 import * as Sentry from "sentry-expo";
 
-
 export default function App() {
   Sentry.init({
     dsn: "https://0f591275b08c49bfb3e68c98e2c8c702@o1231533.ingest.sentry.io/6378969",
     enableInExpoDevelopment: true, // falseとした場合、開発時のエラーは無視される
     debug: true, // 製品版ではfalseにする
   });
+
+  // const RNTwitterSignIn = NativeModules;
+  
+  // RNTwitterSignIn.init(
+  //   process.env.TWITTER_CONSUMER_KEY,
+  //   process.env.TWITTER_CONSUMER_SECRET
+  // ).then(() => console.log("Twitter SDK initialized"));
 
   useEffect(() => {
     const requestPermissionsAsync = async () => {
