@@ -9,9 +9,10 @@ import {
   doc,
   setDoc,
 } from "firebase/firestore";
-import RNDateTimePicker from "@react-native-community/datetimepicker";
 import { useNavigation } from "@react-navigation/native";
-
+import { DateTimePickerModal } from "react-native-modal-datetime-picker";
+import { Icon } from "@rneui/themed";
+// import RNDateTimePicker from "@react-native-community/datetimepicker";
 
 const HomeScreen = () => {
   const handleLogout = () => {
@@ -26,6 +27,7 @@ const HomeScreen = () => {
 
   const user = auth.currentUser;
   const userRef = doc(db, "users", `${user.uid}`);
+  const [medtime, setMedtime] = useState("");
 
   useEffect(() => {
     getDoc(userRef).then((snapshot) => {
@@ -49,27 +51,37 @@ const HomeScreen = () => {
           repeats: true,
         },
       });
+      setMedtime(med);
     });
   }, []);
 
-  const [notification, setNotification] = useState("");
+  // const [notification, setNotification] = useState("");
 
   // const onChangeNotification = async (event) => {
-    // event.preventDefault();
-    // const { date } = event.target.elements;
-    // setNotification(event.target.value);
+  // event.preventDefault();
+  // const { date } = event.target.elements;
+  // setNotification(event.target.value);
   // };
 
-  const setDate = (event, date) => {
-    // event.preventDefault();
-    setNotification(date);
-  };
+  // const setDate = (event, date) => {
+  //   // event.preventDefault();
+  //   setNotification(date);
+  // };
   const navigation = useNavigation();
   const toCalendar = () => {
-    navigation.navigate("Calendar",{
+    navigation.navigate("Calendar", {
       Id: 1,
     });
-  } 
+  };
+
+  // useEffect(() => {
+  //   getDoc(userRef).then((snapshot) => {
+  //     const med = snapshot.data().taking_medicine_at;
+  //     if ( med ) {
+  //       navigation.navigate("Calendar");
+  //     }
+  //   })
+  // },[]);
 
   useEffect(() => {
     const subscription = Notifications.addNotificationResponseReceivedListener(
@@ -80,16 +92,50 @@ const HomeScreen = () => {
     return () => subscription.remove();
   }, []);
 
-  const onClickAdd = async () => {
+  // const onClickAdd = async () => {
+  //   try {
+  //     await setDoc(doc(db, "users", `${user.uid}`), {
+  //       taking_medicine_at: `${notification}`,
+  //     });
+  //   } catch (e) {
+  //     console.error("Error adding document: ", e);
+  //   }
+  //   const strftime = require("strftime");
+  //   const takingMedicineTime = strftime("%H:%M", notification);
+  //   Alert.alert(takingMedicineTime, "にお知らせします", [
+  //     {
+  //       onPress: async () => {
+  //         try {
+  //           navigation.navigate("Calendar");
+  //         } catch (e) {
+  //           console.error("Error adding document: ", e);
+  //         }
+  //       },
+  //     },
+  //   ]);
+  // };
+
+  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+
+  const showDatePicker = () => {
+    setDatePickerVisibility(true);
+  };
+
+  const hideDatePicker = () => {
+    setDatePickerVisibility(false);
+  };
+
+  const handleConfirm = async (time) => {
+    hideDatePicker();
     try {
       await setDoc(doc(db, "users", `${user.uid}`), {
-        taking_medicine_at: `${notification}`,
+        taking_medicine_at: `${time}`,
       });
     } catch (e) {
       console.error("Error adding document: ", e);
     }
     const strftime = require("strftime");
-    const takingMedicineTime = strftime("%H:%M", notification);
+    const takingMedicineTime = strftime("%H:%M", time);
     Alert.alert(takingMedicineTime, "にお知らせします", [
       {
         onPress: async () => {
@@ -109,29 +155,40 @@ const HomeScreen = () => {
       <Text style={{ fontSize: 30, marginTop: 10, marginBottom: 10 }}>
         毎日の服薬記録で習慣化
       </Text>
-      <RNDateTimePicker
+      <DateTimePickerModal
+        isVisible={isDatePickerVisible}
+        mode="time"
+        // onChange={setDate}
+        onConfirm={handleConfirm}
+        confirmTextIOS={"この時刻に通知をうけとる"}
+        onCancel={hideDatePicker}
+        // value={notification || new Date()}
+        minimumDate={new Date()}
+      />
+      {/* <RNDateTimePicker
         onChange={setDate}
-        style={{ width: 200 }}
+        style={{ width: 100, marginTop: 30, marginBottom: 10 }}
         value={notification || new Date()}
         mode="time"
-        display="spinner"
+        // display="spinner"
         minimumDate={new Date()}
         // is24Hour={true}
         // minuteInterval="10"
         // textColor="red"
         // neutralButtonLabel="clear"
-      />
+      /> */}
       <TouchableOpacity
-        onPress={onClickAdd}
+        onPress={showDatePicker}
         style={{
-          marginTop: 10,
-          padding: 20,
-          backgroundColor: "#88cb7f",
+          margin: 20,
+          padding: 10,
+          backgroundColor: "skyblue",
           borderRadius: 10,
         }}
       >
-        <Text style={{ color: "white", fontSize: 20 }}>
-          この時刻に通知をうけとる
+        <Icon name="clock" type="evilicon" color="white" size={60} />
+        <Text style={{ color: "white", fontSize: 25, marginTop: 10 }}>
+          通知時刻を選択
         </Text>
       </TouchableOpacity>
 
@@ -148,38 +205,21 @@ const HomeScreen = () => {
           <Text style={{ color: "white" }}>ログアウト</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          onPress={toCalendar}
-          style={{
-            marginTop: 10,
-            padding: 10,
-            backgroundColor: "#88cb7f",
-            borderRadius: 10,
-          }}
-        >
-          <Text style={{ color: "white" }}>calendar</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          // onPress={async () => {
-          //   try {
-          //     const notifications =
-          //       await Notifications.getAllScheduledNotificationsAsync();
-          //     const identifier = notifications[0].identifier;
-          //     await Notifications.cancelAllScheduledNotificationsAsync()
-          //   } catch (e) {
-          //     console.error("Error adding document: ", e);
-          //   }
-          // }}
-          style={{
-            marginTop: 10,
-            padding: 10,
-            backgroundColor: "#88cb7f",
-            borderRadius: 10,
-          }}
-        >
-          <Text style={{ color: "white" }}>通知終了</Text>
-        </TouchableOpacity>
+        {medtime ? (
+          <TouchableOpacity
+            onPress={toCalendar}
+            style={{
+              marginTop: 10,
+              padding: 10,
+              backgroundColor: "#88cb7f",
+              borderRadius: 10,
+            }}
+          >
+            <Text style={{ color: "white" }}>calendar</Text>
+          </TouchableOpacity>
+        ) : (
+          <Text></Text>
+        )}
       </View>
     </View>
   );
