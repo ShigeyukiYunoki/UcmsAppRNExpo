@@ -1,13 +1,13 @@
 {
   "expo": {
-    "name": "UcmsAppRNExpo",
-    "slug": "UcmsAppRNExpo",
+    "name": "UcmsApp",
+    "slug": "UcmsApp",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "splash": {
       "image": "./assets/splash.png",
-      "resizeMode": "contain",
+      "resizeMode": "cover",
       "backgroundColor": "#ffffff"
     },
     "updates": {
@@ -15,12 +15,17 @@
     },
     "assetBundlePatterns": ["**/*"],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": false,
+      "bundleIdentifier": "moc.ppasmcu",
+      "buildNumber": "1.0.0"
     },
     "android": {
+      "package": "moc.ppasmcu",
+        "versionCode": 1,
+        "permissions": [],
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#FFFFFF"
+        "foregroundImage": "./assets/icon-adaptive-foreground.png",
+        "backgroundImage": "./assets/icon-adaptive-background.png"
       }
     },
     "web": {
