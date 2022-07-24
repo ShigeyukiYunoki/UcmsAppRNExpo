@@ -1,37 +1,32 @@
 import { View, StyleSheet, FlatList } from "react-native";
 import React, { useState, useEffect } from "react";
+import { db } from "../src/firebase";
 import ListUser from "../components/ListUser";
 import "react-native-get-random-values";
-import {REACT_APP_DEV_API_URL_USERS} from "@env";
+import { collection, onSnapshot } from "firebase/firestore";
 
 const UsersScreen = () => {
   const [users, setUsers] = useState([]);
 
-  // const addUser = (name) => {
-  //   setUsers((prevUsers) => {
-  //     return [{ id: uuidv4(), name }, ...prevUsers];
-  //   });
-  // };
+    const usersRef = collection(db, "users");
 
-  // const deleteUser = (id) => {
-  //   setUsers((prevUsers) => {
-  //     return prevUsers.filter((prevUser) => prevUser.id !== id);
-  //   });
-  // };
-
-  useEffect(() => {
-    const getUser = async () => {
-      const res = await fetch(REACT_APP_DEV_API_URL_USERS);
-      const users = await res.json();
-      setUsers(users);
-    };
-    getUser();
-  }, []);
+    useEffect(() => {
+      const subscriber = onSnapshot(
+      usersRef,
+      (querySnapshot) => {
+        const users = [];
+        querySnapshot.forEach((doc) => {
+          const userData = doc.data().twitter_data;
+          const name = doc.data().name;
+          users.push({ userData, key: doc.id, name });
+        })
+        setUsers(users);
+      });
+      return () => subscriber;
+    },[]);
 
   return (
     <View style={styles.container}>
-      {/* <Header title="ユーザ一覧" /> */}
-      {/* <AddUser addUser={addUser} /> */}
       <FlatList
         data={ users }
         renderItem={({ item }) => (
@@ -47,7 +42,6 @@ const UsersScreen = () => {
           ></View>
         )}
       />
-      {/* <Footer /> */}
     </View>
   );
 };
@@ -55,9 +49,6 @@ const UsersScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // backgroundColor: '#fff',
-    // alignItems: 'center',
-    // justifyContent: 'center',
   },
   text: {
     alignItems: "center",
