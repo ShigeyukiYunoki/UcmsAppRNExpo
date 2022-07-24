@@ -1,31 +1,30 @@
+import "react-native-gesture-handler";
 import React, { useState, useEffect } from "react";
-import { Button, NativeModules } from "react-native";
+import { LogBox } from "react-native";
 import "react-native-get-random-values";
 import { NavigationContainer } from "@react-navigation/native";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import HomeScreen from "./screens/HomeScreen";
 import CalendarScreen from "./screens/CalendarScreen";
-import RegisterScreen from "./screens/RegisterScreen";
 import LoginScreen from "./screens/LoginScreen";
+import UsersScreen from "./screens/UsersScreen";
+import UsersCalendarScreen from "./screens/UsersCalendarScreen";
 import { auth } from "./src/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import * as Notifications from "expo-notifications";
 import * as Sentry from "sentry-expo";
 
-export default function App() {
+// import ignoreWarnings from "react-native-ignore-warnings";
+// ignoreWarnings("Setting a timer");
+// ignoreWarnings("AsyncStorage has been");
+LogBox.ignoreLogs(["Setting a timer", "AsyncStorage has been"]);
+
+export default function App({}) {
   Sentry.init({
     dsn: "https://0f591275b08c49bfb3e68c98e2c8c702@o1231533.ingest.sentry.io/6378969",
     enableInExpoDevelopment: true, // falseとした場合、開発時のエラーは無視される
-    debug: true, // 製品版ではfalseにする
+    debug: false, // 製品版ではfalseにする
   });
-
-  // const RNTwitterSignIn = NativeModules;
-  
-  // RNTwitterSignIn.init(
-  //   process.env.TWITTER_CONSUMER_KEY,
-  //   process.env.TWITTER_CONSUMER_SECRET
-  // ).then(() => console.log("Twitter SDK initialized"));
 
   useEffect(() => {
     const requestPermissionsAsync = async () => {
@@ -33,12 +32,11 @@ export default function App() {
       if (granted) {
         return;
       }
-      
       await Notifications.requestPermissionsAsync();
     };
     return () => requestPermissionsAsync();
   }, []);
-  
+
   useEffect(() => {
     Notifications.setNotificationHandler({
       handleNotification: async () => ({
@@ -49,31 +47,24 @@ export default function App() {
     });
   }, []);
 
-  
-  // const Tab = createBottomTabNavigator();
   const Stack = createNativeStackNavigator();
-  const [user, setUser] = useState("");
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        console.log(user.uid);
-        setUser(user);
-      } else {
-        setUser("");
-      }
-    });
-    return () => unsubscribe();
-  }, []);
-  
-  // const navigation = useNavigation();
-  // const toCalendar = () => {
-  //   navigation.navigate("Calendar");
-  // }; 
+
+   const [user, setUser] = useState("");
+   useEffect(() => {
+     const unsubscribe = onAuthStateChanged(auth, (user) => {
+       if (user) {
+         console.log(user.uid);
+         setUser(user);
+       } else {
+         setUser("");
+       }
+     });
+     return () => unsubscribe();
+   }, []);
 
   // useEffect(() => {
-  //   const subscribeNotification = (notification) => {
-  //     const { data = {} } = notification;
-
+    //   const subscribeNotification = (notification) => {
+      //     const { data = {} } = notification
   //     if (notification.origin === "selected") {
   //       if (screen) {
   //         // アプリがバックグラウンドまたは、開かれていない状態で通知を開いた場合
@@ -94,70 +85,16 @@ export default function App() {
           <Stack.Screen
             name="Home"
             component={HomeScreen}
-            options={{
-              headerRight: () => (
-                <Button
-                  title="Calendar"
-                />
-              ),
-            }}
           />
         ) : (
           <>
             <Stack.Screen name="Login" component={LoginScreen} />
-            <Stack.Screen name="Register" component={RegisterScreen} />
           </>
         )}
         <Stack.Screen name="Calendar" component={CalendarScreen} />
+        <Stack.Screen name="Users" component={UsersScreen} />
+        <Stack.Screen name="UsersCalendar" component={UsersCalendarScreen} />
       </Stack.Navigator>
-
-      {/* <Tab.Navigator>
-        <Tab.Screen
-          name="Home"
-          component={HomeScreen}
-          options={{
-            tabBarIcon: ({ color, size }) => (
-              <Ionicons name="ios-home" size={size} color={color} />
-            ),
-          }}
-        />
-        <Tab.Screen
-          name="ユーザー一覧"
-          component={UsersScreen}
-          options={{
-            tabBarIcon: ({ color, size }) => (
-              <Ionicons name="person" size={size} color={color} />
-            ),
-          }}
-        />
-        <Tab.Screen
-          name="ユーザー登録"
-          component={RegisterScreen}
-          options={{
-            tabBarIcon: ({ color, size }) => (
-              <Ionicons name="person" size={size} color={color} />
-            ),
-          }}
-        />
-        <Tab.Screen
-          name="カレンダー"
-          component={CalendarScreen}
-          options={{
-            tabBarIcon: ({ color, size }) => (
-              <Ionicons name="calendar" size={size} color={color} />
-            ),
-          }}
-        />
-        <Tab.Screen
-          name="ログイン"
-          component={LoginScreen}
-          options={{
-            tabBarIcon: ({ color, size }) => (
-              <Ionicons name="people" size={size} color={color} />
-            ),
-          }}
-        />
-      </Tab.Navigator> */}
     </NavigationContainer>
   );
 }

@@ -1,5 +1,15 @@
 import { Calendar, LocaleConfig } from "react-native-calendars";
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+  SafeAreaView,
+  ScrollView,
+  useWindowDimensions,
+} from "react-native";
 import React, {
   useState,
   useEffect
@@ -10,6 +20,7 @@ import {
   getDoc,
   collection,
   addDoc,
+  updateDoc,
   doc,
   onSnapshot,
   query,
@@ -20,16 +31,26 @@ import { auth } from "../src/firebase";
 import { db } from "../src/firebase";
 import * as Notifications from "expo-notifications";
 import { subDays, format } from "date-fns";
+import { useTwitter } from "react-native-simple-twitter";
+import { SocialIcon } from "@rneui/themed";
+// React 18.0.0では未対応のため、17.0.2にdowngrade
+import Dialog from "react-native-dialog";
+import {
+  TwitterAuthProvider,
+  signInWithCredential,
+} from "firebase/auth";
 
 const CalendarScreen = ({ route, navigation }) => {
   const user = auth.currentUser;
   const userRef = doc(db, "users", `${user.uid}`);
   const tookMedicinesRef = collection(db, "users", `${user.uid}`, "medicines");
-  
+
   const [medicines, setMedicines] = useState([]);
   const [meds, setMeds] = useState([]);
   const [marks, setMarks] = useState({});
   const [days, setDays] = useState(0);
+  const [twit, setTwit] = useState({});
+  const [isLoading, setisLoading] = useState(true);
 
   useEffect(() => {
     const strftime = require("strftime");
@@ -49,32 +70,8 @@ const CalendarScreen = ({ route, navigation }) => {
         console.error("Error adding document: ", error);
       }
     );
-    // getDocs(query(tookMecicinesRef, orderBy("took_medicine_at", "desc"))).then(
-    //   (snapshot) => {
-    //     const items = [];
-    //     snapshot.forEach((doc) => {
-    //       const med = doc.data().took_medicine_at.toDate();
-    //       const m = strftime("%Y-%m-%d", med);
-    //       items.push(m);
-    //     });
-    //     setMedicines(items);
-    //   }
-    //   );
     return () => unsubscribe();
   }, []);
-
-
-  // const [medicines, setMedicines] = useState([]);
-
-  // useEffect(() => {
-  //   const getMedicine = async () => {
-  //     const res = await fetch(REACT_APP_DEV_API_URL_MEDICINES);
-  //     const medicines = await res.json();
-  //     setMedicines(medicines);
-  //   };
-  //   getMedicine();
-  // }, []);
-
 
   useEffect(() => {
     const strftime = require("strftime");
@@ -85,7 +82,7 @@ const CalendarScreen = ({ route, navigation }) => {
         const tookMedicineToday = new Date();
         const today = strftime("%Y年%m月%d日", new Date());
         console.log(today);
-        
+
         Alert.alert(`${today}の服薬は？`, "", [
           {
             text: "完了！",
@@ -105,7 +102,7 @@ const CalendarScreen = ({ route, navigation }) => {
             style: "cancel",
           },
           { text: "まだ...", onPress: () => navigation.navigate("Home") },
-        ])
+        ]);
       } else {
         snapshot.forEach((doc) => {
           const med = doc.data().took_medicine_at.toDate();
@@ -125,9 +122,7 @@ const CalendarScreen = ({ route, navigation }) => {
                         took_medicine_at: tookMedicineToday,
                       }
                     );
-                    
                     setDays((day) => day + 1);
-                    
                   } catch (e) {
                     console.error("Error adding document: ", e);
                   }
@@ -137,12 +132,11 @@ const CalendarScreen = ({ route, navigation }) => {
               { text: "まだ...", onPress: () => navigation.navigate("Home") },
             ]);
           }
-        })
+        });
       }
     });
   }, []);
 
-  
   useEffect(() => {
     const markedDates = {};
     medicines.forEach((i) => {
@@ -184,15 +178,15 @@ const CalendarScreen = ({ route, navigation }) => {
     );
     return () => unsubscribe();
   }, [marks]);
-  
+
   useEffect(() => {
     // meds.forEach((index) => {
-      //   if (meds[index]+[1] == subDays(meds[index], 1)) {
-        //   setDays(days + 1);
-        //   }
-        // });
-        // for (const value of mmm) {
-          //   if (value[index + 1] !== subDays(value[index], 1)) break;
+    //   if (meds[index]+[1] == subDays(meds[index], 1)) {
+    //   setDays(days + 1);
+    //   }
+    // });
+    // for (const value of mmm) {
+    //   if (value[index + 1] !== subDays(value[index], 1)) break;
     //   setDays(days + 1);
     // }
     for (let i = 0; i < meds.length; i++) {
@@ -203,35 +197,122 @@ const CalendarScreen = ({ route, navigation }) => {
           setDays((day) => day + 1);
         } else {
           setDays((day) => day + 1);
-          console.log(days);
           break;
         }
-      } 
+      }
+      // getDoc(userRef).then((snapshot) => {
+      //   if (snapshot.data().max_days < days){
+      //     updateDoc(doc(db, "users", `${user.uid}`), {
+      //       max_days: days,
+      //     });
+      //   }
+      // })
     }
     if (
       new Date(meds[0]).getDate() !== subDays(new Date(), 1).getDate() &&
       new Date(meds[0]).getDate() !== new Date().getDate()
-      ) {
-        setDays(0);
-      } 
-    }, [meds]);
-    
-    // console.log(new Date(subDays(meds[0], 1)).getTime());
-    // console.log(new Date(meds[1]).getTime());
-    // console.log(new Date(meds[1]).getDate());
-    // console.log(subDays(new Date(), 1).getDate());
+    ) {
+      setDays(0);
+    }
+  }, [meds]);
 
-    useEffect(() => {
-      if (
-        new Date(meds[0]).getDate() === new Date().getDate() &&
-        subDays(new Date(meds[0]), 1).getDate() !== new Date(meds[1]).getDate()
-        ) {
-          setDays(1);
+  // console.log(new Date(subDays(meds[0], 1)).getTime());
+  // console.log(new Date(meds[1]).getTime());
+  // console.log(new Date(meds[1]).getDate());
+  // console.log(subDays(new Date(), 1).getDate());
+
+  useEffect(() => {
+    if (
+      new Date(meds[0]).getDate() === new Date().getDate() &&
+      subDays(new Date(meds[0]), 1).getDate() !== new Date(meds[1]).getDate()
+    ) {
+      setDays(1);
+    }
+    // console.log(days); // これがあるとdaysが２にならず、最終的に１になってくれる
+    // console.log(days); // 2回やらないと前日が空いてる場合２になってしまう
+  }, [days]); //medsじゃないとダメ。marksでは上記機能せず
+  // 上記はどれもダメで結果daysが変わるので、daysで更新した
+
+  const [max, setMax] = useState(0);
+
+  const eachCons = (array, num) => {
+    return Array.from({ length: array.length - num + 1 }, (_, i) =>
+      array.slice(i, i + num)
+    );
+  };
+  const array = meds;
+
+  const eachConsmeds = eachCons(array, 2);
+
+  // eachConsmeds.forEach((i) => {
+  //   let mays = 0;
+  //   const first = format(subDays(i[0], 1), "dd");
+  //   const second = format(i[1], "dd");
+  //   if (first === second) {
+  //     mays ++;
+  //   }
+  //   console.log(first , second);
+  //   console.log(mays);
+  // });
+  // console.log(eachConsmeds.length);
+
+  useEffect(() => {
+    let forMax = 0;
+    for (let i = 0; i < eachConsmeds.length; i++) {
+      const first = new Date(subDays(eachConsmeds[i][0], 1)).getTime();
+      const second = new Date(eachConsmeds[i][1]).getTime();
+      const d = [];
+      let t = 0;
+      if (first === second) {
+        forMax++;
+        t = eachConsmeds.length + 1;
+        if (i + 2 === t) {
+          forMax++;
+          d.push(forMax);
+          getDoc(userRef).then(() => {
+            updateDoc(doc(db, "users", `${user.uid}`), {
+              max_days: d[0],
+            });
+          });
         }
-        console.log(days); // これがあるとdaysが２にならず、最終的に１になってくれる
-        console.log(days); // 2回やらないと前日が空いてる場合２になってしまう
-      }, [meds]); //medsじゃないとダメ。marksでは上記機能せず
-  
+        } else {
+          forMax++;
+          d.push(forMax);
+          console.log(d[0]);
+          getDoc(userRef).then((snapshot) => {
+            const m = snapshot.data().max_days;
+            if (m < d[0]) {
+              updateDoc(doc(db, "users", `${user.uid}`), {
+                max_days: d[0],
+              });
+            }
+            setMax(m)
+          });
+          forMax = 0;
+        }
+    }
+  });
+
+  useEffect(() => {
+    if (days === 1) {
+      updateDoc(doc(db, "users", `${user.uid}`), {
+        max_days: 1,
+      });
+    } else if (days === 2) {
+      updateDoc(doc(db, "users", `${user.uid}`), {
+        max_days: 2,
+      });
+    }
+  },[])
+
+  useEffect(() => {
+    getDoc(userRef).then((snapshot) => {
+      const m = snapshot.data().max_days;
+      setMax(m);
+    });
+  },[marks])
+
+
   useEffect(() => {
     getDoc(userRef).then((snapshot) => {
       const strftime = require("strftime");
@@ -254,80 +335,154 @@ const CalendarScreen = ({ route, navigation }) => {
       });
     });
   }, []);
-  
-  const medicineAlert = () => {
-    const strftime = require("strftime");
-    const today = strftime("%Y年%m月%d日", new Date());
-    console.log(today);
-    Alert.alert(`${today}の服薬は？`, "", [
-      {
-        text: "完了！",
-        onPress: () => console.log("OK Pressed"),
-        style: "cancel",
-      },
-      { text: "まだ...", onPress: () => console.log("Cancel Pressed") },
-    ]);
-  }
 
-  return (
+  const { twitter, TWModal } = useTwitter({
+    onSuccess: (user, accessToken) => {
+      onTwitterLoginSuccess(user, accessToken);
+      console.log(user);
+      console.log(accessToken);
+      showDialog();
+    },
+  });
+
+  const onTwitterLoginSuccess = async (user, accessToken) => {
+    const credential = TwitterAuthProvider.credential(
+      accessToken.oauth_token,
+      accessToken.oauth_token_secret
+    );
+    await signInWithCredential(auth, credential);
+  };
+
+  const tweet = async () => {
+    try {
+      await twitter.api("POST", "statuses/update.json", {
+        status: text,
+      });
+
+      Alert.alert("Success", "ツイートできました", [
+        {
+          text: "OK",
+        },
+      ]);
+    } catch (e) {
+      console.log(e.message);
+      if (
+        e.message !==
+        `{"errors":[{"code":187,"message":"Status is a duplicate."}]}`
+      ) {
+        Alert.alert("再度認証が必要です", "", [
+          {
+            text: "OK",
+            onPress: () => {
+              twitter.login();
+            },
+          },
+        ]);
+      } else {
+        Alert.alert("同じ内容で連続投稿できません", "", [
+          {
+            text: "OK",
+            onPress: () => {
+              showDialog;
+            },
+          },
+        ]);
+      }
+    }
+  };
+
+  useEffect(() => {
+    onChangeText(`\n現在の連続服薬日数 ${days} \n連続服薬記録 ${max} \n\n #潰瘍性大腸炎 #UcmsApp`);
+  },[days, max]);
+
+  const [visible, setVisible] = useState(false);
+  const [text, onChangeText] = useState("");
+
+  const showDialog = () => {
+    setVisible(true);
+  };
+
+  const handleCancel = () => {
+    setVisible(false);
+  };
+
+  const handleTweet = () => {
+    setVisible(false);
+    tweet();
+  };
+  
+  useEffect(() => {
+     setTimeout(() => setisLoading(false), 500);
+  },[])
+
+  const [ctxHeight, setCtxHeight] = useState(0);
+  const handleContentSizeChange = (contentWidth, contentHeight) => {
+    setCtxHeight(contentHeight);
+  };
+  const window = useWindowDimensions();
+  const scrollEnabled = ctxHeight > window.height;
+  
+  return isLoading ? (
     <View style={styles.container}>
-      <TouchableOpacity
-        onPress={ medicineAlert }
-        style={{
-          marginTop: 10,
-          padding: 20,
-          backgroundColor: "#88cb7f",
-          borderRadius: 10,
-        }}
-      >
-        <Text style={{ color: "white" }}>今日の服薬完了？</Text>
-      </TouchableOpacity>
-      <Text style={styles.text}>現在の連続服薬日数</Text>
-      <Text style={styles.text}>{days}</Text>
-      {/* <Text style={styles.text}>連続服薬記録</Text>
-      <Text style={styles.text}>{number}</Text> */}
-      <Calendar
-        monthFormat={"yyyy年 MM月"}
-        markedDates={
-          marks
-        }
-      />
-      {/* <FlatList
-        data={ medicines }
-        renderItem={({ item }) => (
-          <ListMedicine item={item} />
-        )}
-        keyExtractor={(item) => item.id}
-        ItemSeparatorComponent={() => (
-          <View
-            style={{
-              backgroundColor: "gray",
-              height: 1,
-            }}
-          ></View>
-        )}
-      /> */}
-      <TouchableOpacity
-        onPress={async () => {
-          try {
-            const notifications =
-              await Notifications.getAllScheduledNotificationsAsync();
-            console.log(notifications);
-            // await Notifications.cancelAllScheduledNotificationsAsync()
-          } catch (e) {
-            console.error("Error adding document: ", e);
-          }
-        }}
-        style={{
-          marginTop: 10,
-          padding: 10,
-          backgroundColor: "#88cb7f",
-          borderRadius: 10,
-        }}
-      >
-        <Text style={{ color: "white" }}>通知終了</Text>
-      </TouchableOpacity>
+      <ActivityIndicator />
     </View>
+  ) : (
+    <SafeAreaView style={styles.container}>
+      <ScrollView
+        contentContainerStyle={styles.scrollview}
+        scrollEnabled={scrollEnabled}
+        onContentSizeChange={handleContentSizeChange}
+      >
+        <Text style={styles.text}>現在の連続服薬日数</Text>
+        <Text style={styles.text}>{days}</Text>
+        <Text style={styles.text}>連続服薬記録</Text>
+        <Text style={styles.text}>{max}</Text>
+        <Calendar monthFormat={"yyyy年 MM月"} markedDates={marks} />
+
+        {twit ? (
+          <TouchableOpacity
+            onPress={showDialog}
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              padding: 10,
+              marginBottom: 5,
+              backgroundColor: "skyblue",
+              borderRadius: 10,
+            }}
+          >
+            <SocialIcon
+              iconColor="white"
+              iconSize={18}
+              iconType="font-awesome"
+              type="twitter"
+            />
+            <Text style={{ color: "white", fontSize: 16 }}>
+              服薬記録をツイート
+            </Text>
+          </TouchableOpacity>
+        ) : (
+          <Text></Text>
+        )}
+
+        <Dialog.Container visible={visible}>
+          <Dialog.Title>服薬記録を共有しましょう！</Dialog.Title>
+          <Dialog.Input
+            defaultValue={text}
+            onChangeText={(text) => onChangeText(text)}
+            // keyboardType="twitter"
+            // autoFocus="true"
+            multiline
+            numberOfLines={8}
+          ></Dialog.Input>
+          <Dialog.Button label="やめる" onPress={handleCancel} />
+          <Dialog.Button label="ツイート" onPress={handleTweet} />
+        </Dialog.Container>
+
+        <TWModal />
+
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
@@ -375,10 +530,12 @@ LocaleConfig.defaultLocale = "jp";
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    // backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexGrow: 1,
+  },
+  scrollview: {
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
   },
   text: {
     alignItems: "center",
@@ -394,4 +551,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CalendarScreen; 
+export default CalendarScreen;
