@@ -1,20 +1,40 @@
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
+import {
+  View,
+  SafeAreaView,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+  ScrollView,
+  useWindowDimensions,
+} from "react-native";
 import React, { useState, useEffect } from "react";
 import { auth } from "../src/firebase";
-import { signOut } from "firebase/auth";
+import {
+  signOut,
+  // updateProfile,
+  deleteUser,
+  TwitterAuthProvider,
+  signInWithCredential,
+} from "firebase/auth";
+import { useTwitter } from "react-native-simple-twitter";
 import * as Notifications from "expo-notifications";
 import { db } from "../src/firebase";
 import {
   getDoc,
   doc,
   setDoc,
+  updateDoc,
+  deleteDoc,
+  deleteField,
 } from "firebase/firestore";
 import { useNavigation } from "@react-navigation/native";
+// import Dialog from "react-native-dialog";
 import { DateTimePickerModal } from "react-native-modal-datetime-picker";
 import { Icon } from "@rneui/themed";
-// import RNDateTimePicker from "@react-native-community/datetimepicker";
 
-const HomeScreen = () => {
+const HomeScreen = ( ) => {
   const handleLogout = () => {
     signOut(auth)
       .then(() => {
@@ -27,7 +47,9 @@ const HomeScreen = () => {
 
   const user = auth.currentUser;
   const userRef = doc(db, "users", `${user.uid}`);
+  const [name, setName] = useState("");
   const [medtime, setMedtime] = useState("");
+  const [isLoading, setisLoading] = useState(true);
 
   useEffect(() => {
     getDoc(userRef).then((snapshot) => {
@@ -52,36 +74,31 @@ const HomeScreen = () => {
         },
       });
       setMedtime(med);
-    });
-  }, []);
+      });
+    }, []);
+    
+    useEffect(() => {
+      getDoc(userRef).then((snapshot) => {
+        const m = snapshot.data().max_days;
+        if (m === undefined) {
+          updateDoc(doc(db, "users", `${user.uid}`), {
+            max_days: 0,
+          });
+        }
+      })
+    },[]);
 
-  // const [notification, setNotification] = useState("");
-
-  // const onChangeNotification = async (event) => {
-  // event.preventDefault();
-  // const { date } = event.target.elements;
-  // setNotification(event.target.value);
-  // };
-
-  // const setDate = (event, date) => {
-  //   // event.preventDefault();
-  //   setNotification(date);
-  // };
   const navigation = useNavigation();
+
   const toCalendar = () => {
     navigation.navigate("Calendar", {
       Id: 1,
     });
   };
 
-  // useEffect(() => {
-  //   getDoc(userRef).then((snapshot) => {
-  //     const med = snapshot.data().taking_medicine_at;
-  //     if ( med ) {
-  //       navigation.navigate("Calendar");
-  //     }
-  //   })
-  // },[]);
+  const toUsers = () => {
+    navigation.navigate("Users");
+  };
 
   useEffect(() => {
     const subscription = Notifications.addNotificationResponseReceivedListener(
@@ -92,28 +109,9 @@ const HomeScreen = () => {
     return () => subscription.remove();
   }, []);
 
-  // const onClickAdd = async () => {
-  //   try {
-  //     await setDoc(doc(db, "users", `${user.uid}`), {
-  //       taking_medicine_at: `${notification}`,
-  //     });
-  //   } catch (e) {
-  //     console.error("Error adding document: ", e);
-  //   }
-  //   const strftime = require("strftime");
-  //   const takingMedicineTime = strftime("%H:%M", notification);
-  //   Alert.alert(takingMedicineTime, "にお知らせします", [
-  //     {
-  //       onPress: async () => {
-  //         try {
-  //           navigation.navigate("Calendar");
-  //         } catch (e) {
-  //           console.error("Error adding document: ", e);
-  //         }
-  //       },
-  //     },
-  //   ]);
-  // };
+  useEffect(() => {
+    console.log(user.displayName);
+  },[])
 
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
 
@@ -128,14 +126,23 @@ const HomeScreen = () => {
   const handleConfirm = async (time) => {
     hideDatePicker();
     try {
-      await setDoc(doc(db, "users", `${user.uid}`), {
-        taking_medicine_at: `${time}`,
+      getDoc(userRef).then((snapshot) => {
+        if (snapshot.data().taking_medicine_at === null) {
+          setDoc(doc(db, "users", `${user.uid}`), {
+            taking_medicine_at: `${time}`,
+          });
+        } else {
+          updateDoc(doc(db, "users", `${user.uid}`), {
+            taking_medicine_at: `${time}`,
+          });
+        }
       });
-    } catch (e) {
-      console.error("Error adding document: ", e);
+    } catch (error) {
+      console.log(error);
     }
     const strftime = require("strftime");
     const takingMedicineTime = strftime("%H:%M", time);
+    setMedtime(takingMedicineTime);
     Alert.alert(takingMedicineTime, "にお知らせします", [
       {
         onPress: async () => {
@@ -149,85 +156,308 @@ const HomeScreen = () => {
     ]);
   };
 
-  return (
-    <View style={styles.container}>
-      <Text style={{ fontSize: 30, marginBottom: 50 }}>UcmsAppにようこそ</Text>
-      <Text style={{ fontSize: 30, marginTop: 10, marginBottom: 10 }}>
-        毎日の服薬記録で習慣化
-      </Text>
-      <DateTimePickerModal
-        isVisible={isDatePickerVisible}
-        mode="time"
-        // onChange={setDate}
-        onConfirm={handleConfirm}
-        confirmTextIOS={"この時刻に通知をうけとる"}
-        onCancel={hideDatePicker}
-        // value={notification || new Date()}
-        minimumDate={new Date()}
-      />
-      {/* <RNDateTimePicker
-        onChange={setDate}
-        style={{ width: 100, marginTop: 30, marginBottom: 10 }}
-        value={notification || new Date()}
-        mode="time"
-        // display="spinner"
-        minimumDate={new Date()}
-        // is24Hour={true}
-        // minuteInterval="10"
-        // textColor="red"
-        // neutralButtonLabel="clear"
-      /> */}
-      <TouchableOpacity
-        onPress={showDatePicker}
-        style={{
-          margin: 20,
-          padding: 10,
-          backgroundColor: "skyblue",
-          borderRadius: 10,
-        }}
-      >
-        <Icon name="clock" type="evilicon" color="white" size={60} />
-        <Text style={{ color: "white", fontSize: 25, marginTop: 10 }}>
-          通知時刻を選択
-        </Text>
-      </TouchableOpacity>
+  // useEffect(() => {
+  //     if (
+  //       user.displayName === null 
+  //     ) {
+  //       showDialog();
+  //     }
+  // },[])
 
-      <View style={styles.text}>
-        <TouchableOpacity
-          onPress={handleLogout}
+  // const setname = () => {
+  //   updateProfile(user, {
+  //     displayName: name,
+  //   })
+  //     .then(() => {
+  //       console.log(user.displayName);
+  //       setDoc(doc(db, "users", `${user.uid}`), {
+  //         name: `${user.displayName}`,
+  //       });
+  //     })
+  //     .catch((error) => {
+  //       console.log(error);
+  //     });
+  // }
+
+  // const [visible, setVisible] = useState(false);
+
+  // const showDialog = () => {
+  //   setVisible(true);
+  // };
+
+  // const handleOk = () => {
+  //   setVisible(false);
+  //   setname();
+  // };
+
+  useEffect(() => {
+    setTimeout(() => setisLoading(false), 500);
+  }, [medtime]);
+
+  const deleteUserData = async () => {
+    try {
+      Alert.alert("記録が全て消去されます", "本当に退会しますか？", [
+        {
+          text: "する",
+          onPress: async () => {
+            Notifications.cancelAllScheduledNotificationsAsync();
+            deleteUser(user)
+              .then(() => {
+                deleteDoc(userRef)
+                  .then(() => {
+                    Alert.alert("あなたの健康を願っております","ぜひまたのご利用を")
+                  })
+                  .catch((e) => {
+                    console.log(e);
+                  });
+                })
+                .catch((e) => {
+                  console.log(e.message);
+                  if (e) {
+                    Alert.alert("再度認証が必要です", "", [
+                      {
+                        text: "OK",
+                        onPress: () => {
+                          twitter.login();
+                        },
+                      },
+                    ]);
+                  }
+              });
+          },
+          style: "cancel",
+        },
+        { text: "しない" },
+      ]);
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  const { twitter, TWModal } = useTwitter({
+    onSuccess: (user, accessToken) => {
+      onTwitterLoginSuccess(user, accessToken);
+    },
+  });
+
+  const onTwitterLoginSuccess = async (user, accessToken) => {
+    const credential = TwitterAuthProvider.credential(
+      accessToken.oauth_token,
+      accessToken.oauth_token_secret
+    );
+    await signInWithCredential(auth, credential);
+  };
+
+const [ctxHeight, setCtxHeight] = useState(0);
+const handleContentSizeChange = (contentWidth, contentHeight) => {
+  setCtxHeight(contentHeight);
+};
+const window = useWindowDimensions();
+const scrollEnabled = ctxHeight > window.height;
+
+  return isLoading ? (
+    <View style={styles.container}>
+      <ActivityIndicator />
+    </View>
+  ) : (
+    <SafeAreaView style={styles.container}>
+      <ScrollView
+        contentContainerstyle={styles.scrollview}
+        scrollEnabled={scrollEnabled}
+        onContentSizeChange={handleContentSizeChange}
+      >
+        <View style={{ alignSelf: "center" }}>
+          <Text
+            style={{
+              fontSize: 30,
+              marginTop: 20,
+              marginBottom: 20,
+              alignSelf: "center",
+            }}
+          >
+            UcmsAppにようこそ
+          </Text>
+          <Text style={{ fontSize: 30, marginBottom: 10, alignSelf: "center" }}>
+            毎日の服薬記録で習慣化
+          </Text>
+
+          <DateTimePickerModal
+            isVisible={isDatePickerVisible}
+            mode="time"
+            onConfirm={handleConfirm}
+            confirmTextIOS={"この時刻に通知をうけとる"}
+            onCancel={hideDatePicker}
+            minimumDate={new Date()}
+          />
+          <TouchableOpacity
+            onPress={showDatePicker}
+            style={{
+              margin: 20,
+              padding: 10,
+              backgroundColor: "blue",
+              borderRadius: 10,
+            }}
+          >
+            <Icon name="clock" type="evilicon" color="white" size={60} />
+            <Text
+              style={{
+                color: "white",
+                fontSize: 25,
+                marginTop: 10,
+                alignSelf: "center",
+              }}
+            >
+              通知時刻を選択
+            </Text>
+          </TouchableOpacity>
+
+          {medtime ? (
+            <TouchableOpacity
+              onPress={async () => {
+                try {
+                  const notifications =
+                    await Notifications.getAllScheduledNotificationsAsync();
+                  console.log(notifications);
+                  await Notifications.cancelAllScheduledNotificationsAsync();
+                  Alert.alert("通知をキャンセル？", "", [
+                    {
+                      text: "する",
+                      onPress: async () => {
+                        try {
+                          await updateDoc(userRef, {
+                            taking_medicine_at: deleteField(),
+                          });
+                          setMedtime("");
+                        } catch (e) {
+                          console.error("Error adding document: ", e);
+                        }
+                      },
+                      style: "cancel",
+                    },
+                    { text: "しない" },
+                  ]);
+                } catch (e) {
+                  console.error("Error adding document: ", e);
+                }
+              }}
+              style={{
+                margin: 5,
+                padding: 5,
+                marginLeft: 60,
+                marginRight: 60,
+                marginBottom: 10,
+                backgroundColor: "#FF8A00",
+                borderRadius: 10,
+              }}
+            >
+              <Text
+                style={{ color: "white", fontSize: 18, alignSelf: "center" }}
+              >
+                通知をキャンセル
+              </Text>
+            </TouchableOpacity>
+          ) : (
+            <Text></Text>
+          )}
+        </View>
+
+        <View
           style={{
-            marginTop: 10,
-            padding: 10,
-            backgroundColor: "#88cb7f",
-            borderRadius: 10,
+            width: "100%",
+            flexDirection: "row",
+            justifyContent: "center",
           }}
         >
-          <Text style={{ color: "white" }}>ログアウト</Text>
-        </TouchableOpacity>
-
-        {medtime ? (
           <TouchableOpacity
-            onPress={toCalendar}
+            onPress={handleLogout}
             style={{
               marginTop: 10,
+              marginBottom: 10,
+              padding: 13,
+              backgroundColor: "skyblue",
+              borderRadius: 10,
+            }}
+          >
+            <Icon name="log-out" type="feather" color="white" size={50} />
+            <Text style={{ color: "white", fontSize: 18, marginTop: 10 }}>
+              ログアウト
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={deleteUserData}
+            style={{
+              margin: 10,
+              padding: 5,
+              backgroundColor: "red",
+              borderRadius: 10,
+              alignSelf: "center",
+            }}
+          >
+            <Text style={{ color: "white", fontSize: 18 }}>退会</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={toUsers}
+            style={{
+              marginTop: 10,
+              marginBottom: 10,
               padding: 10,
               backgroundColor: "#88cb7f",
               borderRadius: 10,
             }}
           >
-            <Text style={{ color: "white" }}>calendar</Text>
+            <Icon name="users" type="feather" color="white" size={50} />
+            <Text style={{ color: "white", fontSize: 18, marginTop: 10 }}>
+              ユーザー一覧
+            </Text>
           </TouchableOpacity>
-        ) : (
-          <Text></Text>
-        )}
-      </View>
-    </View>
+        </View>
+
+        <View style={styles.text}>
+          {medtime ? (
+            <TouchableOpacity
+              onPress={toCalendar}
+              style={{
+                margin: 20,
+                padding: 10,
+                paddingLeft: 60,
+                paddingRight: 60,
+                backgroundColor: "green",
+                borderRadius: 10,
+              }}
+            >
+              <Icon name="calendar" type="evilicon" color="white" size={60} />
+              <Text style={{ color: "white", fontSize: 22, marginTop: 10 }}>
+                服薬の記録・確認
+              </Text>
+            </TouchableOpacity>
+          ) : (
+            <Text></Text>
+          )}
+        </View>
+
+        {/* <Dialog.Container visible={visible}>
+          <Dialog.Title>表示名を入力してください</Dialog.Title>
+          <Dialog.Input
+            defaultValue={name}
+            onChangeText={(name) => setName(name)}
+            autoFocus={true}
+            autoCapitalize={"none"}
+          ></Dialog.Input>
+          <Dialog.Button label="決定" onPress={handleOk} />
+        </Dialog.Container> */}
+
+        <TWModal />
+
+      </ScrollView>
+    </SafeAreaView>
   );
-};;
+};
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
+  },
+  scrollview: {
     backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: "center",
