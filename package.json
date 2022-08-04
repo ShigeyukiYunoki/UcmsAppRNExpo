@@ -15,6 +15,15 @@
     "@react-navigation/native-stack": "^6.5.0",
     "axios": "^0.26.0",
     "expo": "~44.0.0",
+<<<<<<< Updated upstream
+=======
+    "expo-application": "~4.0.1",
+    "expo-constants": "~13.0.1",
+    "expo-device": "~4.1.0",
+    "expo-file-system": "~13.1.4",
+    "expo-notifications": "~0.14.0",
+    "expo-sqlite": "~10.1.0",
+>>>>>>> Stashed changes
     "expo-status-bar": "~1.2.0",
     "react": "17.0.1",
     "react-dom": "17.0.1",
