@@ -1,32 +1,49 @@
 {
   "expo": {
-    "name": "UcmsAppRNExpo",
-    "slug": "UcmsAppRNExpo",
+    "name": "UcmsApp",
+    "slug": "UcmsApp",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "splash": {
       "image": "./assets/splash.png",
-      "resizeMode": "contain",
+      "resizeMode": "cover",
       "backgroundColor": "#ffffff"
     },
     "updates": {
       "fallbackToCacheTimeout": 0
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": false,
+      "bundleIdentifier": "moc.ppasmcu",
+      "buildNumber": "1.0.0"
     },
     "android": {
+      "package": "moc.ppasmcu",
+        "versionCode": 1,
+        "permissions": [],
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#FFFFFF"
+        "foregroundImage": "./assets/icon-adaptive-foreground.png",
+        "backgroundImage": "./assets/icon-adaptive-background.png"
       }
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
-  }
+    },
+    "plugins": ["sentry-expo"],
+    "hooks": {
+      "postPublish": [
+        {
+          "file": "sentry-expo/upload-sourcemaps",
+          "config": {
+            "organization": "ucmsapp",
+            "project": "ucmsapp",
+            "authToken": "b313152b9d5a410792b2490eed55dad6bafa3935671e4b62b3b5f77d3ebd17c9"
+          }
+        }
+      ]
+    },
+    "userInterfaceStyle": "automatic"
+  } 
 }
