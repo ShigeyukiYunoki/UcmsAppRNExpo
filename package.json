@@ -26,22 +26,13 @@
     "date-fns": "^2.28.0",
     "dayjs": "^1.11.0",
     "expo": "~44.0.0",
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-=======
     "expo-application": "~4.0.1",
     "expo-constants": "~13.0.1",
     "expo-device": "~4.1.0",
     "expo-file-system": "~13.1.4",
     "expo-notifications": "~0.14.0",
+    "expo-sharing": "~10.1.0",
     "expo-sqlite": "~10.1.0",
->>>>>>> Stashed changes
-=======
-    "expo-application": "~4.0.1",
-    "expo-constants": "~13.0.1",
-    "expo-device": "~4.1.0",
-    "expo-notifications": "~0.14.0",
->>>>>>> 82c31361c1c9c1e9093855aaf8951270baa9b662
     "expo-status-bar": "~1.2.0",
     "expo-updates": "~0.11.7",
     "firebase": "9.6.7",
@@ -71,7 +62,7 @@
   "devDependencies": {
     "@babel/core": "^7.12.9",
     "@types/jest": "^27.4.1",
-    "@types/react": "^17.0.39",
+    "@types/react": "~17.0.21",
     "@types/react-native": "^0.66.16",
     "@types/react-native-get-random-values": "^1.8.0",
     "@types/react-test-renderer": "^17.0.1",

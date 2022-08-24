@@ -1,11 +1,3 @@
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-import { View, Text, StyleSheet } from "react-native";
-import React from "react";
-
-const HomeScreen = () => {
-  return (
-=======
 import {
   View,
   SafeAreaView,
@@ -22,7 +14,7 @@ import { auth } from "../src/firebase";
 import {
   signOut,
   // updateProfile,
-  // deleteUser,
+  deleteUser,
   TwitterAuthProvider,
   signInWithCredential,
 } from "firebase/auth";
@@ -43,49 +35,9 @@ import { DateTimePickerModal } from "react-native-modal-datetime-picker";
 import { Icon } from "@rneui/themed";
 import {
   createTable,
-  createUsersTable,
-  insertMaxDays,
-  deleteUser,
+  dropTable
 } from "../components/Sql";
 
-=======
-import {
-  View,
-  SafeAreaView,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Alert,
-  ActivityIndicator,
-  ScrollView,
-  useWindowDimensions,
-} from "react-native";
-import React, { useState, useEffect } from "react";
-import { auth } from "../src/firebase";
-import {
-  signOut,
-  // updateProfile,
-  deleteUser,
-  TwitterAuthProvider,
-  signInWithCredential,
-} from "firebase/auth";
-import { useTwitter } from "react-native-simple-twitter";
-import * as Notifications from "expo-notifications";
-import { db } from "../src/firebase";
-import {
-  getDoc,
-  doc,
-  setDoc,
-  updateDoc,
-  deleteDoc,
-  deleteField,
-} from "firebase/firestore";
-import { useNavigation } from "@react-navigation/native";
-// import Dialog from "react-native-dialog";
-import { DateTimePickerModal } from "react-native-modal-datetime-picker";
-import { Icon } from "@rneui/themed";
-
->>>>>>> 82c31361c1c9c1e9093855aaf8951270baa9b662
 const HomeScreen = ( ) => {
   const handleLogout = () => {
     signOut(auth)
@@ -99,10 +51,6 @@ const HomeScreen = ( ) => {
 
   const user = auth.currentUser;
   const userRef = doc(db, "users", `${user.uid}`);
-<<<<<<< HEAD
-=======
-  const [name, setName] = useState("");
->>>>>>> 82c31361c1c9c1e9093855aaf8951270baa9b662
   const [medtime, setMedtime] = useState("");
   const [isLoading, setisLoading] = useState(true);
 
@@ -129,45 +77,13 @@ const HomeScreen = ( ) => {
         },
       });
       setMedtime(med);
-<<<<<<< HEAD
     });
   }, []);
 
   useEffect(() => {
-    createUsersTable();
-    // insertMaxDays(0);
-    // deleteUser();
-  },[])
-
-  useEffect(() => {
     createTable();
+    // dropTable();
   },[])
-
-  // useEffect(() => {
-  //   getDoc(userRef).then((snapshot) => {
-  //     const m = snapshot.data().max_days;
-  //     if (m === undefined) {
-  //       updateDoc(doc(db, "users", `${user.uid}`), {
-  //         max_days: 0,
-  //       });
-  //     }
-  //   });
-  // }, []);
-=======
-      });
-    }, []);
-    
-    useEffect(() => {
-      getDoc(userRef).then((snapshot) => {
-        const m = snapshot.data().max_days;
-        if (m === undefined) {
-          updateDoc(doc(db, "users", `${user.uid}`), {
-            max_days: 0,
-          });
-        }
-      })
-    },[]);
->>>>>>> 82c31361c1c9c1e9093855aaf8951270baa9b662
 
   const navigation = useNavigation();
 
@@ -192,11 +108,7 @@ const HomeScreen = ( ) => {
 
   useEffect(() => {
     console.log(user.displayName);
-<<<<<<< HEAD
   }, []);
-=======
-  },[])
->>>>>>> 82c31361c1c9c1e9093855aaf8951270baa9b662
 
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
 
@@ -243,11 +155,7 @@ const HomeScreen = ( ) => {
 
   // useEffect(() => {
   //     if (
-<<<<<<< HEAD
   //       user.displayName === null
-=======
-  //       user.displayName === null 
->>>>>>> 82c31361c1c9c1e9093855aaf8951270baa9b662
   //     ) {
   //       showDialog();
   //     }
@@ -294,19 +202,14 @@ const HomeScreen = ( ) => {
               .then(() => {
                 deleteDoc(userRef)
                   .then(() => {
-<<<<<<< HEAD
                     Alert.alert(
                       "あなたの健康を願っております",
                       "ぜひまたのご利用を"
                     );
-=======
-                    Alert.alert("あなたの健康を願っております","ぜひまたのご利用を")
->>>>>>> 82c31361c1c9c1e9093855aaf8951270baa9b662
                   })
                   .catch((e) => {
                     console.log(e);
                   });
-<<<<<<< HEAD
               })
               .catch((e) => {
                 console.log(e.message);
@@ -320,21 +223,6 @@ const HomeScreen = ( ) => {
                     },
                   ]);
                 }
-=======
-                })
-                .catch((e) => {
-                  console.log(e.message);
-                  if (e) {
-                    Alert.alert("再度認証が必要です", "", [
-                      {
-                        text: "OK",
-                        onPress: () => {
-                          twitter.login();
-                        },
-                      },
-                    ]);
-                  }
->>>>>>> 82c31361c1c9c1e9093855aaf8951270baa9b662
               });
           },
           style: "cancel",
@@ -360,7 +248,6 @@ const HomeScreen = ( ) => {
     await signInWithCredential(auth, credential);
   };
 
-<<<<<<< HEAD
   const [ctxHeight, setCtxHeight] = useState(0);
   const handleContentSizeChange = (contentWidth, contentHeight) => {
     setCtxHeight(contentHeight);
@@ -369,25 +256,9 @@ const HomeScreen = ( ) => {
   const scrollEnabled = ctxHeight > window.height;
 
   return isLoading ? (
->>>>>>> Stashed changes
-=======
-const [ctxHeight, setCtxHeight] = useState(0);
-const handleContentSizeChange = (contentWidth, contentHeight) => {
-  setCtxHeight(contentHeight);
-};
-const window = useWindowDimensions();
-const scrollEnabled = ctxHeight > window.height;
-
-  return isLoading ? (
->>>>>>> 82c31361c1c9c1e9093855aaf8951270baa9b662
     <View style={styles.container}>
       <ActivityIndicator />
     </View>
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> 82c31361c1c9c1e9093855aaf8951270baa9b662
   ) : (
     <SafeAreaView style={styles.container}>
       <ScrollView
@@ -576,15 +447,8 @@ const scrollEnabled = ctxHeight > window.height;
         </Dialog.Container> */}
 
         <TWModal />
-<<<<<<< HEAD
       </ScrollView>
     </SafeAreaView>
->>>>>>> Stashed changes
-=======
-
-      </ScrollView>
-    </SafeAreaView>
->>>>>>> 82c31361c1c9c1e9093855aaf8951270baa9b662
   );
 };
 
