@@ -83,12 +83,25 @@ import * as Sharing from "expo-sharing";
   export const deleteMedicine = () => {
     db.transaction((tx) => {
       tx.executeSql(
-        `delete from Medicines where TookMedicineAt="2022-08-24"`,
+        `delete from Medicines where TookMedicineAt="2022-08-26"`,
         () => {
           console.log("delete TookMedicineAt success");
         },
         () => {
           console.log("delete TookMedicineAt faile");
+        }
+      );
+    });
+  }
+  export const deleteTakingMedicineAt = () => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        `delete from Users where id=1`,
+        () => {
+          console.log("delete TakingMedicineAt success");
+        },
+        () => {
+          console.log("delete TakingMedicineAt faile");
         }
       );
     });

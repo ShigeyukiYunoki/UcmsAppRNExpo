@@ -20,23 +20,15 @@ import {
 } from "firebase/auth";
 import { useTwitter } from "react-native-simple-twitter";
 import * as Notifications from "expo-notifications";
-import { db } from "../src/firebase";
-import {
-  getDoc,
-  doc,
-  setDoc,
-  updateDoc,
-  deleteDoc,
-  deleteField,
-} from "firebase/firestore";
 import { useNavigation } from "@react-navigation/native";
-// import Dialog from "react-native-dialog";
 import { DateTimePickerModal } from "react-native-modal-datetime-picker";
 import { Icon } from "@rneui/themed";
 import {
   createTable,
-  dropTable
+  dropTable,
+  deleteTakingMedicineAt
 } from "../components/Sql";
+import * as SQLite from "expo-sqlite";
 
 const HomeScreen = ( ) => {
   const handleLogout = () => {
@@ -50,35 +42,46 @@ const HomeScreen = ( ) => {
   };
 
   const user = auth.currentUser;
-  const userRef = doc(db, "users", `${user.uid}`);
   const [medtime, setMedtime] = useState("");
   const [isLoading, setisLoading] = useState(true);
 
+   const db = SQLite.openDatabase("db");
+
   useEffect(() => {
-    getDoc(userRef).then((snapshot) => {
-      const strftime = require("strftime");
-      // var strftime = require("strftime")ではダメ
-      const med = snapshot.data().taking_medicine_at;
-      console.log(med);
-      const m = strftime("%B %d, %Y %H:%M:%S", new Date(med));
-      const m_hour = Number(strftime("%H", new Date(m)));
-      const m_minute = Number(strftime("%M", new Date(m)));
-      Notifications.cancelAllScheduledNotificationsAsync();
-      Notifications.scheduleNotificationAsync({
-        content: {
-          body: "服薬を記録して、一緒に習慣化しましょう！",
-          title: "UcmsApp",
-          subtitle: "今日の服薬はおわりましたか？",
+    const strftime = require("strftime");
+    // var strftime = require("strftime")ではダメ
+    Notifications.cancelAllScheduledNotificationsAsync();
+    db.transaction((tx) => {
+      tx.executeSql(
+        `select TakingMedicineAt from Users where id = 1`,
+        [],
+        (_tx, results) => {
+          const med = results.rows.item(0).TakingMedicineAt;
+          // console.log(med);
+          const m = strftime("%B %d, %Y %H:%M:%S", new Date(med));
+          const m_hour = Number(strftime("%H", new Date(m)));
+          const m_minute = Number(strftime("%M", new Date(m)));
+          Notifications.scheduleNotificationAsync({
+            content: {
+              body: "服薬を記録して、一緒に習慣化しましょう！",
+              title: "UcmsApp",
+              subtitle: "今日の服薬はおわりましたか？",
+              sound: "sound.wav"
+            },
+            trigger: {
+              hour: m_hour,
+              minute: m_minute,
+              repeats: true,
+            },
+          });
+          setMedtime(med);
         },
-        trigger: {
-          hour: m_hour,
-          minute: m_minute,
-          repeats: true,
-        },
-      });
-      setMedtime(med);
+        () => {
+          console.log("select TakingMedicineAt faile");
+        }
+      );
     });
-  }, []);
+  }, [medtime]);
 
   useEffect(() => {
     createTable();
@@ -123,16 +126,17 @@ const HomeScreen = ( ) => {
   const handleConfirm = async (time) => {
     hideDatePicker();
     try {
-      getDoc(userRef).then((snapshot) => {
-        if (snapshot.data().taking_medicine_at === null) {
-          setDoc(doc(db, "users", `${user.uid}`), {
-            taking_medicine_at: `${time}`,
-          });
-        } else {
-          updateDoc(doc(db, "users", `${user.uid}`), {
-            taking_medicine_at: `${time}`,
-          });
-        }
+      db.transaction((tx) => {
+        tx.executeSql(
+          "replace into Users (id, TakingMedicineAt) values (?, ?);",
+          [1, `${time}`],
+          () => {
+            console.log("replace TakingMedicineAt success");
+          },
+          () => {
+            console.log("replace TakingMedicineAt faile");
+          }
+        );
       });
     } catch (error) {
       console.log(error);
@@ -152,40 +156,6 @@ const HomeScreen = ( ) => {
       },
     ]);
   };
-
-  // useEffect(() => {
-  //     if (
-  //       user.displayName === null
-  //     ) {
-  //       showDialog();
-  //     }
-  // },[])
-
-  // const setname = () => {
-  //   updateProfile(user, {
-  //     displayName: name,
-  //   })
-  //     .then(() => {
-  //       console.log(user.displayName);
-  //       setDoc(doc(db, "users", `${user.uid}`), {
-  //         name: `${user.displayName}`,
-  //       });
-  //     })
-  //     .catch((error) => {
-  //       console.log(error);
-  //     });
-  // }
-
-  // const [visible, setVisible] = useState(false);
-
-  // const showDialog = () => {
-  //   setVisible(true);
-  // };
-
-  // const handleOk = () => {
-  //   setVisible(false);
-  //   setname();
-  // };
 
   useEffect(() => {
     setTimeout(() => setisLoading(false), 500);
@@ -318,15 +288,13 @@ const HomeScreen = ( ) => {
                   const notifications =
                     await Notifications.getAllScheduledNotificationsAsync();
                   console.log(notifications);
-                  await Notifications.cancelAllScheduledNotificationsAsync();
                   Alert.alert("通知をキャンセル？", "", [
                     {
                       text: "する",
                       onPress: async () => {
                         try {
-                          await updateDoc(userRef, {
-                            taking_medicine_at: deleteField(),
-                          });
+                          await Notifications.cancelAllScheduledNotificationsAsync();
+                          deleteTakingMedicineAt();
                           setMedtime("");
                         } catch (e) {
                           console.error("Error adding document: ", e);
@@ -434,17 +402,6 @@ const HomeScreen = ( ) => {
             <Text></Text>
           )}
         </View>
-
-        {/* <Dialog.Container visible={visible}>
-          <Dialog.Title>表示名を入力してください</Dialog.Title>
-          <Dialog.Input
-            defaultValue={name}
-            onChangeText={(name) => setName(name)}
-            autoFocus={true}
-            autoCapitalize={"none"}
-          ></Dialog.Input>
-          <Dialog.Button label="決定" onPress={handleOk} />
-        </Dialog.Container> */}
 
         <TWModal />
       </ScrollView>
