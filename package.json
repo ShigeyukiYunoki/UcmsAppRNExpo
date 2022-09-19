@@ -14,7 +14,6 @@
     "@react-native-community/datetimepicker": "4.0.0",
     "@react-native-firebase/app": "^14.5.1",
     "@react-native-firebase/firestore": "^14.5.1",
-    "@react-native-twitter-signin/twitter-signin": "^1.2.0",
     "@react-navigation/bottom-tabs": "^6.2.0",
     "@react-navigation/drawer": "^6.4.1",
     "@react-navigation/native": "^6.0.8",
@@ -26,22 +25,13 @@
     "date-fns": "^2.28.0",
     "dayjs": "^1.11.0",
     "expo": "~44.0.0",
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-=======
     "expo-application": "~4.0.1",
     "expo-constants": "~13.0.1",
     "expo-device": "~4.1.0",
     "expo-file-system": "~13.1.4",
     "expo-notifications": "~0.14.0",
+    "expo-sharing": "~10.1.0",
     "expo-sqlite": "~10.1.0",
->>>>>>> Stashed changes
-=======
-    "expo-application": "~4.0.1",
-    "expo-constants": "~13.0.1",
-    "expo-device": "~4.1.0",
-    "expo-notifications": "~0.14.0",
->>>>>>> 82c31361c1c9c1e9093855aaf8951270baa9b662
     "expo-status-bar": "~1.2.0",
     "expo-updates": "~0.11.7",
     "firebase": "9.6.7",
@@ -55,6 +45,7 @@
     "react-native-gesture-handler": "~2.1.0",
     "react-native-get-random-values": "~1.7.0",
     "react-native-modal-datetime-picker": "^13.1.2",
+    "react-native-paper": "^4.12.4",
     "react-native-reanimated": "~2.3.1",
     "react-native-safe-area-context": "3.3.2",
     "react-native-screens": "~3.10.1",
@@ -62,6 +53,7 @@
     "react-native-social-share": "^1.6.5",
     "react-native-vector-icons": "^9.1.0",
     "react-native-web": "0.17.1",
+    "react-native-webview": "11.15.0",
     "sentry-expo": "^4.0.0",
     "strftime": "^0.10.1",
     "sweetalert2": "^11.4.10",
@@ -71,11 +63,12 @@
   "devDependencies": {
     "@babel/core": "^7.12.9",
     "@types/jest": "^27.4.1",
-    "@types/react": "^17.0.39",
+    "@types/react": "~17.0.21",
     "@types/react-native": "^0.66.16",
     "@types/react-native-get-random-values": "^1.8.0",
     "@types/react-test-renderer": "^17.0.1",
     "@types/strftime": "^0.9.4",
+    "react-native-clean-project": "^4.0.1",
     "typescript": "^4.5.5"
   },
   "$comment": [

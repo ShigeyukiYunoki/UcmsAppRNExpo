@@ -31,7 +31,17 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": ["sentry-expo"],
+    "plugins": [
+      "sentry-expo",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#ffffff",
+          "sound": "./assets/sound.wav"
+        }
+      ]
+    ],
     "hooks": {
       "postPublish": [
         {

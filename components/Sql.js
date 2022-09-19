@@ -1,42 +1,68 @@
 import * as SQLite from "expo-sqlite";
 import * as FileSystem from "expo-file-system";
+import * as Sharing from "expo-sharing";
 
   const db = SQLite.openDatabase("db");
-  // テーブルを作成する
   export const createTable = () => {
     console.log("FileSystem; " + FileSystem.documentDirectory + "SQLite/");
+    // Sharing.shareAsync(
+    //   FileSystem.documentDirectory + 'SQLite/', 
+    //   {dialogTitle: 'share or copy your DB via'}
+    // ).catch(error =>{
+    //   console.log(error);
+    // });
+
+    db.transaction((tx) => {
+      tx.executeSql(
+        `CREATE TABLE IF NOT EXISTS Users(ID INTEGER PRIMARY KEY NOT NULL, TakingMedicineAt);`,
+        [],
+        () => {
+          console.log("create Users table success");
+        },
+        () => {
+          console.log("create Users table faile");
+        }
+      );
+    });
+
     db.transaction((tx) => {
       tx.executeSql(
         `CREATE TABLE IF NOT EXISTS Medicines(ID INTEGER PRIMARY KEY NOT NULL, TookMedicineAt);`,
         [],
         () => {
-          selectTookMedicineAt();
-        // select();
+          console.log("create Medicines table success");
+          db.transaction((tx) => {
+            tx.executeSql(
+              "replace into Medicines (id, TookMedicineAt) values (1, '1970-01-01');",
+              [],
+              () => {
+                console.log("insert TookMedicineAt success");
+              },
+              () => {
+                console.log("insert faile");
+              }
+            );
+          });
         },
         () => {
-          console.log("create table faile");
+          console.log("create Medicines table faile");
+        }
+      );
+    });
+
+    db.transaction((tx) => {
+      tx.executeSql(
+        `CREATE TABLE IF NOT EXISTS Days(ID INTEGER PRIMARY KEY NOT NULL, Days number);`,
+        [],
+        () => {
+          console.log("create Days table success");
+        },
+        () => {
+          console.log("create Days table faile");
         }
       );
     });
   }
-
-    export const createUsersTable = () => {
-      db.transaction((tx) => {
-        tx.executeSql(
-          `CREATE TABLE IF NOT EXISTS Users(ID INTEGER PRIMARY KEY NOT NULL UNIQUE, MaxDays, TakingMedicineAt);`,
-          [],
-          () => {
-            console.log("create table");
-            // db.transaction((tx) => {
-            //   tx.executeSql("insert into Users (MaxDays) values (0);"),
-            //     () => {
-            //       console.log("insert success");
-            //     };
-            // });
-          }
-        );
-      });
-    }
 
   export const insertMedicine = (TookMedicineAt) => {
     db.transaction((tx) => {
@@ -45,10 +71,10 @@ import * as FileSystem from "expo-file-system";
         "insert into Medicines (TookMedicineAt) values (?);",
         [TookMedicineAt],
         () => {
-          console.log("insert success");
+          console.log("insert TookMedicineAt success");
         },
         () => {
-          console.log("insert faile");
+          console.log("insert TookMedicineAt faile");
         }
       );
     });
@@ -57,20 +83,34 @@ import * as FileSystem from "expo-file-system";
   export const deleteMedicine = () => {
     db.transaction((tx) => {
       tx.executeSql(
-        `delete from Medicines where TookMedicineAt="2022-08-02";`,
+        `delete from Medicines where TookMedicineAt="2022-09-18"`,
         () => {
-          console.log("delete success");
+          console.log("delete TookMedicineAt success");
         },
         () => {
-          console.log("delete faile");
+          console.log("delete TookMedicineAt faile");
         }
       );
     });
   }
-  export const deleteUser = () => {
+  export const deleteTakingMedicineAt = () => {
     db.transaction((tx) => {
       tx.executeSql(
-        `delete from Users;`,
+        `delete from Users where id=1`,
+        () => {
+          console.log("delete TakingMedicineAt success");
+        },
+        () => {
+          console.log("delete TakingMedicineAt faile");
+        }
+      );
+    });
+  }
+
+  export const dropTable = () => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        `drop table Users`,
         () => {
           console.log("delete success");
         },
@@ -82,77 +122,21 @@ import * as FileSystem from "expo-file-system";
     });
   }
 
-  export const selectTookMedicineAt = () => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        `select TookMedicineAt from Medicines order by TookMedicineAt asc`,
-        [],
-        (_tx, results) => {
-          const len = results.rows.length;
-          const items = [];
-          for (let i = 0; i < len; i++) {
-            const t = results.rows.item(i).TookMedicineAt;
-            items.push(t);
-          }
-          console.log(items);
-          return items;
-        },
-        () => {
-          console.log("select faile");
-          return false;
-        }
-      );
-    });
-  }
+  export const deleteDocumentDirectory = () => {
+    FileSystem.deleteAsync(FileSystem.documentDirectory + "SQLite/");
+  };
 
-  export const insertMaxDays = (id, MaxDays) => {
+  export const replaceDays = (id, Days) => {
     db.transaction((tx) => {
       tx.executeSql(
-        // ?のところに引数で設定した値が順番に入る
-        "insert into Users (id, MaxDays) values (?, ?);",
-        [id, MaxDays],
+        "replace into Days (id, Days) values (?, ?);",
+        [id, Days],
         () => {
-          console.log("insert success");
+          console.log("replace Days success");
         },
         () => {
-          console.log("insert faile");
+          console.log("replace faile");
         }
       );
     });
   };
-
-  export const selectMaxDays = () => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        `select MaxDays from Users where id = 1`,
-        [],
-        // 成功時のコールバック関数
-        (_tx, results) => {
-          console.log("select success");
-          console.log("select result:" + results.rows.item(0).MaxDays);
-          return results.rows.item(0).MaxDays;
-        },
-        () => {
-          // 失敗時のコールバック関数
-          console.log("select faile");
-          return false;
-        }
-      );
-    });
-  }
-
-  export const updateMaxDays = (Max) => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        `update Users set MaxDays=?;`,
-        [Max],
-        () => {
-          console.log("update success");
-        },
-        () => {
-          console.log("update faile");
-          return false;
-        }
-      );
-    });
-  }
