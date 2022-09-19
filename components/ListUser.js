@@ -15,87 +15,63 @@ const ListUser = ({ item }) => {
   const navigation = useNavigation();
   console.log(item);
   return (
-    <View style={styles.row}>
-      {item.userData ? (
-        <View style={styles.item}>
+    <View style={styles.row} key={item.key}>
+      <View style={styles.item}>
+        {item.userData.profile_image_url ===
+        "http://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png" ? (
+          <Icon
+            name="person"
+            size={40}
+            style={{
+              height: 50,
+              width: 50,
+              borderRadius: 30,
+              marginRight: 8,
+              color: "white",
+              backgroundColor: "#ffffff",
+            }}
+          />
+        ) : (
           <Image
             source={{ uri: `${item.userData.profile_image_url}` }}
             style={styles.avatar}
           />
-          <Text style={styles.text}>{item.userData.screen_name}</Text>
-
-          <TouchableOpacity style={styles.socialIcon}>
-            <SocialIcon
-              iconColor="white"
-              iconSize={20}
-              iconType="font-awesome"
-              type="twitter"
-              onPress={() =>
-                Linking.openURL(
-                  `https://twitter.com/${item.userData.screen_name}`
-                )
-              }
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={{
-              padding: 10,
-              borderRadius: 10,
-              marginLeft: 10,
-              backgroundColor: "green",
-            }}
-          >
-            <Icon
-              name="calendar"
-              type="evilicon"
-              color="white"
-              size={25}
-              onPress={() =>
-                navigation.navigate("UsersCalendar", {
-                  uid: item.key,
-                })
-              }
-            />
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <View
+        )}
+        <Text style={styles.text}>{item.userData.screen_name}</Text>
+        <TouchableOpacity style={styles.socialIcon}>
+          <SocialIcon
+            iconColor="white"
+            iconSize={20}
+            iconType="font-awesome"
+            type="twitter"
+            onPress={() =>
+              Linking.openURL(
+                `https://twitter.com/${item.userData.screen_name}`
+              )
+            }
+          />
+        </TouchableOpacity>
+        {/* <TouchableOpacity
           style={{
-            flexDirection: "row",
-            width: "100%",
-            alignItems: "center",
-            justifyContent: "space-between",
+            padding: 10,
+            borderRadius: 10,
+            marginLeft: 10,
+            backgroundColor: "green",
           }}
         >
-          <View style={styles.item}>
-            <Image
-              // source={{ uri: "https://i.pravatar.cc/150" }}
-              style={styles.avatar}
-            />
-            <Text style={styles.text}>{item.name}</Text>
-          </View>
-          <TouchableOpacity
-            style={{
-              padding: 10,
-              borderRadius: 10,
-              marginLeft: 10,
-              backgroundColor: "green",
-            }}
-          >
-            <Icon
-              name="calendar"
-              type="evilicon"
-              color="white"
-              size={25}
-              onPress={() =>
-                navigation.navigate("UsersCalendar", {
-                  uid: item.key,
-                })
-              }
-            />
-          </TouchableOpacity>
-        </View>
-      )}
+          <Icon
+            name="calendar"
+            type="evilicon"
+            color="white"
+            size={25}
+            onPress={() =>
+              navigation.navigate("UsersCalendar", {
+                uid: item.key,
+              })
+            }
+          />
+        </TouchableOpacity> */}
+      </View>
     </View>
   );
 }
@@ -117,7 +93,7 @@ const styles = StyleSheet.create({
     height: 50,
     width: 50,
     borderRadius: 30,
-    marginRight: 8,
+    marginRight: 8
   },
   socialIcon: {
     flex: 1,
