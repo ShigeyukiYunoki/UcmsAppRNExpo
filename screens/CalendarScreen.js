@@ -10,10 +10,10 @@ import {
   ScrollView,
   useWindowDimensions,
 } from "react-native";
-import React, { useState, useEffect, useCallback } from "react";
+import * as React from "react";
+import { useState, useEffect, useCallback } from "react";
 import "react-native-get-random-values";
 import { auth } from "../src/firebase";
-import * as Notifications from "expo-notifications";
 import { subDays } from "date-fns";
 import { useTwitter } from "react-native-simple-twitter";
 import { SocialIcon } from "@rneui/themed";
@@ -22,6 +22,7 @@ import Dialog from "react-native-dialog";
 import {
   TwitterAuthProvider,
   signInWithCredential,
+  onAuthStateChanged
 } from "firebase/auth";
 import * as SQLite from "expo-sqlite";
 import {
@@ -32,12 +33,12 @@ import {
 
 const CalendarScreen = ({ navigation }) => {
 
+  const [user, setUser] = useState(auth.currentUser);
   const [medicines, setMedicines] = useState([]);
   const [meds, setMeds] = useState([]);
   const [marks, setMarks] = useState({});
   const [days, setDays] = useState(0);
   const [max, setMax] = useState(0);
-  const [twit, setTwit] = useState({});
   const [isLoading, setisLoading] = useState(true);
 
   const reloadPage = useCallback(async function () {
@@ -160,6 +161,8 @@ const CalendarScreen = ({ navigation }) => {
       if (days === 0) {
         if (m1 === m2) {
           setDays((day) => day + 1);
+        } else if (meds.length === 1) {
+          break;
         } else {
           setDays((day) => day + 1);
           break;
@@ -170,6 +173,12 @@ const CalendarScreen = ({ navigation }) => {
   },[isLoading]);
 
   useEffect(() => {
+    if (meds.length === 1) {
+      replaceDays(1, 0);
+    }
+  },[])
+
+  useEffect(() => {
     let d = 0;
     let id = 0;
     for (let i = 0; i < meds.length; i++) {
@@ -177,16 +186,18 @@ const CalendarScreen = ({ navigation }) => {
       const m2 = new Date(subDays(meds[i], 1)).getTime();
       if (m1 === m2) {
         d++;
+      } else if (m2 === 0) {
+        break;
       } else {
         d++;
         id++;
         replaceDays(id, d);
         d = 0;
       }
-      // console.log(m1);
-      // console.log(m2);
+      console.log(m1);
+      console.log(m2);
     }
-  }, [isLoading]);
+  }, [days]);
 
   useEffect(() => {
     db.transaction((tx) => {
@@ -197,13 +208,16 @@ const CalendarScreen = ({ navigation }) => {
           {
             const len = results.rows.length;
             let maxday = 0;
+            if (len === 1) {
+              maxday = 0;
+            }
             for (let i = 0; i < len; i++) {
               const d = results.rows.item(i).Days;
-              // console.log(d)
-              if (len === 1) {
-                maxday = d;
-              }
-              if (maxday < d) {
+              console.log(d)
+              // if (len === 3) {
+              //   maxday = 1;
+              // }
+              if (maxday <= d) {
                 maxday = d;
               }
             }
@@ -215,30 +229,7 @@ const CalendarScreen = ({ navigation }) => {
         }
       );
     });
-  }, [isLoading]);
-
-  // useEffect(() => {
-  //   getDoc(userRef).then((snapshot) => {
-  //     const strftime = require("strftime");
-  //     const med = snapshot.data().taking_medicine_at;
-  //     const m = strftime("%B %d, %Y %H:%M:%S", new Date(med));
-  //     const m_hour = Number(strftime("%H", new Date(m)));
-  //     const m_minute = Number(strftime("%M", new Date(m)));
-  //     Notifications.cancelAllScheduledNotificationsAsync();
-  //     Notifications.scheduleNotificationAsync({
-  //       content: {
-  //         body: "服薬を記録して、一緒に習慣化しましょう！",
-  //         title: "UcmsApp",
-  //         subtitle: "今日の服薬はおわりましたか？",
-  //       },
-  //       trigger: {
-  //         hour: m_hour,
-  //         minute: m_minute,
-  //         repeats: true,
-  //       },
-  //     });
-  //   });
-  // }, []);
+  }, [days]);
 
   const { twitter, TWModal } = useTwitter({
     onSuccess: (user, accessToken) => {
@@ -255,7 +246,24 @@ const CalendarScreen = ({ navigation }) => {
       accessToken.oauth_token_secret
     );
     await signInWithCredential(auth, credential);
+
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        console.log(user.uid);
+        setUser(user);
+      } else {
+        setUser("");
+      }
+    });
+    return () => unsubscribe();
   };
+
+  useEffect(() => {
+    twitter.setConsumerKey(
+      process.env.TWITTER_CONSUMER_KEY,
+      process.env.TWITTER_CONSUMER_SECRET
+    );
+  }, []);
 
   const tweet = async () => {
     try {
@@ -274,7 +282,7 @@ const CalendarScreen = ({ navigation }) => {
         e.message !==
         `{"errors":[{"code":187,"message":"Status is a duplicate."}]}`
       ) {
-        Alert.alert("再度認証が必要です", "", [
+        Alert.alert("Twitter認証が必要です", "", [
           {
             text: "OK",
             onPress: () => {
@@ -342,31 +350,28 @@ const CalendarScreen = ({ navigation }) => {
         <Text style={styles.text}>連続服薬記録</Text>
         <Text style={styles.text}>{max}</Text>
         <Calendar monthFormat={"yyyy年 MM月"} markedDates={marks} />
-        {twit ? (
-          <TouchableOpacity
-            onPress={showDialog}
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              padding: 10,
-              marginBottom: 5,
-              backgroundColor: "skyblue",
-              borderRadius: 10,
-            }}
-          >
-            <SocialIcon
-              iconColor="white"
-              iconSize={18}
-              iconType="font-awesome"
-              type="twitter"
-            />
-            <Text style={{ color: "white", fontSize: 16 }}>
-              服薬記録をツイート
-            </Text>
-          </TouchableOpacity>
-        ) : (
-          <Text></Text>
-        )}
+        <TouchableOpacity
+          onPress={showDialog}
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            padding: 10,
+            marginBottom: 5,
+            backgroundColor: "skyblue",
+            borderRadius: 10,
+          }}
+        >
+          <SocialIcon
+            iconColor="white"
+            iconSize={18}
+            iconType="font-awesome"
+            type="twitter"
+          />
+          <Text style={{ color: "white", fontSize: 16 }}>
+            服薬記録をツイート
+          </Text>
+        </TouchableOpacity>
+
         <Dialog.Container visible={visible}>
           <Dialog.Title>服薬記録を共有しましょう！</Dialog.Title>
           <Dialog.Input

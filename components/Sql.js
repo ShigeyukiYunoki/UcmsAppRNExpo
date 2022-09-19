@@ -5,12 +5,12 @@ import * as Sharing from "expo-sharing";
   const db = SQLite.openDatabase("db");
   export const createTable = () => {
     console.log("FileSystem; " + FileSystem.documentDirectory + "SQLite/");
-    Sharing.shareAsync(
-      FileSystem.documentDirectory + 'SQLite/', 
-      {dialogTitle: 'share or copy your DB via'}
-    ).catch(error =>{
-      console.log(error);
-    });
+    // Sharing.shareAsync(
+    //   FileSystem.documentDirectory + 'SQLite/', 
+    //   {dialogTitle: 'share or copy your DB via'}
+    // ).catch(error =>{
+    //   console.log(error);
+    // });
 
     db.transaction((tx) => {
       tx.executeSql(
@@ -33,7 +33,7 @@ import * as Sharing from "expo-sharing";
           console.log("create Medicines table success");
           db.transaction((tx) => {
             tx.executeSql(
-              "replace into Medicines (id, TookMedicineAt) values (1, null);",
+              "replace into Medicines (id, TookMedicineAt) values (1, '1970-01-01');",
               [],
               () => {
                 console.log("insert TookMedicineAt success");
@@ -52,7 +52,7 @@ import * as Sharing from "expo-sharing";
 
     db.transaction((tx) => {
       tx.executeSql(
-        `CREATE TABLE IF NOT EXISTS Days(ID INTEGER PRIMARY KEY NOT NULL, Days);`,
+        `CREATE TABLE IF NOT EXISTS Days(ID INTEGER PRIMARY KEY NOT NULL, Days number);`,
         [],
         () => {
           console.log("create Days table success");
@@ -83,7 +83,7 @@ import * as Sharing from "expo-sharing";
   export const deleteMedicine = () => {
     db.transaction((tx) => {
       tx.executeSql(
-        `delete from Medicines where TookMedicineAt="2022-08-26"`,
+        `delete from Medicines where TookMedicineAt="2022-09-18"`,
         () => {
           console.log("delete TookMedicineAt success");
         },
@@ -121,6 +121,10 @@ import * as Sharing from "expo-sharing";
       );
     });
   }
+
+  export const deleteDocumentDirectory = () => {
+    FileSystem.deleteAsync(FileSystem.documentDirectory + "SQLite/");
+  };
 
   export const replaceDays = (id, Days) => {
     db.transaction((tx) => {
