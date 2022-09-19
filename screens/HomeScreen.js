@@ -9,14 +9,13 @@ import {
   ScrollView,
   useWindowDimensions,
 } from "react-native";
-import React, { useState, useEffect } from "react";
+import * as React from "react";
+import { useState, useEffect, useCallback } from "react";
 import { auth } from "../src/firebase";
 import {
-  signOut,
-  // updateProfile,
-  deleteUser,
   TwitterAuthProvider,
   signInWithCredential,
+  onAuthStateChanged
 } from "firebase/auth";
 import { useTwitter } from "react-native-simple-twitter";
 import * as Notifications from "expo-notifications";
@@ -25,33 +24,29 @@ import { DateTimePickerModal } from "react-native-modal-datetime-picker";
 import { Icon } from "@rneui/themed";
 import {
   createTable,
-  dropTable,
-  deleteTakingMedicineAt
+  deleteTakingMedicineAt,
+  dropTable
 } from "../components/Sql";
 import * as SQLite from "expo-sqlite";
 
 const HomeScreen = ( ) => {
-  const handleLogout = () => {
-    signOut(auth)
-      .then(() => {
-        console.log("logout");
-      })
-      .catch((error) => {
-        console.log(error.message);
-      });
-  };
 
-  const user = auth.currentUser;
+  const [user, setUser] = useState(auth.currentUser);
   const [medtime, setMedtime] = useState("");
   const [isLoading, setisLoading] = useState(true);
 
-   const db = SQLite.openDatabase("db");
+  const reloadPage = useCallback(async function () {
+    setisLoading(true);
+    setTimeout(() => setisLoading(false), 1000);
+  }, []);
+
+  const sqldb = SQLite.openDatabase("db");
 
   useEffect(() => {
     const strftime = require("strftime");
     // var strftime = require("strftime")ではダメ
     Notifications.cancelAllScheduledNotificationsAsync();
-    db.transaction((tx) => {
+    sqldb.transaction((tx) => {
       tx.executeSql(
         `select TakingMedicineAt from Users where id = 1`,
         [],
@@ -109,10 +104,6 @@ const HomeScreen = ( ) => {
     return () => subscription.remove();
   }, []);
 
-  useEffect(() => {
-    console.log(user.displayName);
-  }, []);
-
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
 
   const showDatePicker = () => {
@@ -126,12 +117,13 @@ const HomeScreen = ( ) => {
   const handleConfirm = async (time) => {
     hideDatePicker();
     try {
-      db.transaction((tx) => {
+      sqldb.transaction((tx) => {
         tx.executeSql(
           "replace into Users (id, TakingMedicineAt) values (?, ?);",
           [1, `${time}`],
           () => {
             console.log("replace TakingMedicineAt success");
+            reloadPage();
           },
           () => {
             console.log("replace TakingMedicineAt faile");
@@ -144,6 +136,7 @@ const HomeScreen = ( ) => {
     const strftime = require("strftime");
     const takingMedicineTime = strftime("%H:%M", time);
     setMedtime(takingMedicineTime);
+    createTable();
     Alert.alert(takingMedicineTime, "にお知らせします", [
       {
         onPress: async () => {
@@ -161,48 +154,18 @@ const HomeScreen = ( ) => {
     setTimeout(() => setisLoading(false), 500);
   }, [medtime]);
 
-  const deleteUserData = async () => {
-    try {
-      Alert.alert("記録が全て消去されます", "本当に退会しますか？", [
-        {
-          text: "する",
-          onPress: async () => {
-            Notifications.cancelAllScheduledNotificationsAsync();
-            deleteUser(user)
-              .then(() => {
-                deleteDoc(userRef)
-                  .then(() => {
-                    Alert.alert(
-                      "あなたの健康を願っております",
-                      "ぜひまたのご利用を"
-                    );
-                  })
-                  .catch((e) => {
-                    console.log(e);
-                  });
-              })
-              .catch((e) => {
-                console.log(e.message);
-                if (e) {
-                  Alert.alert("再度認証が必要です", "", [
-                    {
-                      text: "OK",
-                      onPress: () => {
-                        twitter.login();
-                      },
-                    },
-                  ]);
-                }
-              });
-          },
-          style: "cancel",
-        },
-        { text: "しない" },
-      ]);
-    } catch (e) {
-      console.log(e);
-    }
-  };
+  useEffect(() => {
+    setTimeout(() => setisLoading(false), 500);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        console.log(user.uid);
+        setUser(user);
+      } else {
+        setUser("");
+      }
+    });
+    return () => unsubscribe();
+  }, []);
 
   const { twitter, TWModal } = useTwitter({
     onSuccess: (user, accessToken) => {
@@ -216,7 +179,24 @@ const HomeScreen = ( ) => {
       accessToken.oauth_token_secret
     );
     await signInWithCredential(auth, credential);
+
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        console.log(user.uid);
+        setUser(user);
+      } else {
+        setUser("");
+      }
+    });
+    return () => unsubscribe();
   };
+
+  useEffect(() => {
+    twitter.setConsumerKey(
+      process.env.TWITTER_CONSUMER_KEY,
+      process.env.TWITTER_CONSUMER_SECRET
+    );
+  }, []);
 
   const [ctxHeight, setCtxHeight] = useState(0);
   const handleContentSizeChange = (contentWidth, contentHeight) => {
@@ -309,7 +289,6 @@ const HomeScreen = ( ) => {
                 }
               }}
               style={{
-                margin: 5,
                 padding: 5,
                 marginLeft: 60,
                 marginRight: 60,
@@ -324,9 +303,7 @@ const HomeScreen = ( ) => {
                 通知をキャンセル
               </Text>
             </TouchableOpacity>
-          ) : (
-            <Text></Text>
-          )}
+          ) : null}
         </View>
 
         <View
@@ -337,44 +314,18 @@ const HomeScreen = ( ) => {
           }}
         >
           <TouchableOpacity
-            onPress={handleLogout}
-            style={{
-              marginTop: 10,
-              marginBottom: 10,
-              padding: 13,
-              backgroundColor: "skyblue",
-              borderRadius: 10,
-            }}
-          >
-            <Icon name="log-out" type="feather" color="white" size={50} />
-            <Text style={{ color: "white", fontSize: 18, marginTop: 10 }}>
-              ログアウト
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={deleteUserData}
-            style={{
-              margin: 10,
-              padding: 5,
-              backgroundColor: "red",
-              borderRadius: 10,
-              alignSelf: "center",
-            }}
-          >
-            <Text style={{ color: "white", fontSize: 18 }}>退会</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
             onPress={toUsers}
             style={{
-              marginTop: 10,
-              marginBottom: 10,
+              marginTop: 20,
               padding: 10,
+              paddingLeft: 60,
+              paddingRight: 60,
               backgroundColor: "#88cb7f",
               borderRadius: 10,
             }}
           >
             <Icon name="users" type="feather" color="white" size={50} />
-            <Text style={{ color: "white", fontSize: 18, marginTop: 10 }}>
+            <Text style={{ color: "white", fontSize: 22, marginTop: 10 }}>
               ユーザー一覧
             </Text>
           </TouchableOpacity>
@@ -398,11 +349,8 @@ const HomeScreen = ( ) => {
                 服薬の記録・確認
               </Text>
             </TouchableOpacity>
-          ) : (
-            <Text></Text>
-          )}
+          ) : null}
         </View>
-
         <TWModal />
       </ScrollView>
     </SafeAreaView>
