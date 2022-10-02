@@ -13,7 +13,9 @@
     "updates": {
       "fallbackToCacheTimeout": 0
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "moc.ppasmcu",
@@ -21,8 +23,8 @@
     },
     "android": {
       "package": "moc.ppasmcu",
-        "versionCode": 1,
-        "permissions": [],
+      "versionCode": 1,
+      "permissions": [],
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon-adaptive-foreground.png",
         "backgroundImage": "./assets/icon-adaptive-background.png"
@@ -54,6 +56,16 @@
         }
       ]
     },
-    "userInterfaceStyle": "automatic"
-  } 
+    "userInterfaceStyle": "automatic",
+    "extra": {
+      "eas": {
+        "projectId": "b34077c0-96bb-4a63-b78e-78c9b4c979b6"
+      }
+    }
+  },
+  "react-native-google-mobile-ads": {
+    "ios_app_id": "ca-app-pub-6389398835875193~2739631520",
+    "delay_app_measurement_init": true,
+    "user_tracking_usage_description": "許可することで、より関連性の高い広告を表示することができるようになります"
+  }
 }

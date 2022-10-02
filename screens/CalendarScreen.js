@@ -345,32 +345,40 @@ const CalendarScreen = ({ navigation }) => {
         scrollEnabled={scrollEnabled}
         onContentSizeChange={handleContentSizeChange}
       >
-        <Text style={styles.text}>現在の連続服薬日数</Text>
-        <Text style={styles.text}>{days}</Text>
-        <Text style={styles.text}>連続服薬記録</Text>
-        <Text style={styles.text}>{max}</Text>
-        <Calendar monthFormat={"yyyy年 MM月"} markedDates={marks} />
-        <TouchableOpacity
-          onPress={showDialog}
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            padding: 10,
-            marginBottom: 5,
-            backgroundColor: "skyblue",
-            borderRadius: 10,
-          }}
-        >
-          <SocialIcon
-            iconColor="white"
-            iconSize={18}
-            iconType="font-awesome"
-            type="twitter"
-          />
-          <Text style={{ color: "white", fontSize: 16 }}>
-            服薬記録をツイート
-          </Text>
-        </TouchableOpacity>
+        <View style={{ flex: 1 }}>
+          <View style={{ flex: 1, alignItems: "center" }}>
+            <Text style={styles.text}>現在の連続服薬日数</Text>
+            <Text style={styles.text}>{days}</Text>
+            <Text style={styles.text}>連続服薬記録</Text>
+            <Text style={styles.text}>{max}</Text>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Calendar monthFormat={"yyyy年 MM月"} markedDates={marks} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <TouchableOpacity
+              onPress={showDialog}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                padding: 5,
+                marginBottom: 5,
+                backgroundColor: "skyblue",
+                borderRadius: 10,
+              }}
+            >
+              <SocialIcon
+                iconColor="white"
+                iconSize={18}
+                iconType="font-awesome"
+                type="twitter"
+              />
+              <Text style={{ color: "white", fontSize: 16 }}>
+                服薬記録をツイート
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
 
         <Dialog.Container visible={visible}>
           <Dialog.Title>服薬記録を共有しましょう！</Dialog.Title>
@@ -436,9 +444,9 @@ LocaleConfig.defaultLocale = "jp";
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
+    backgroundColor: "#fff",
   },
   scrollview: {
-    backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: "center",
   },
