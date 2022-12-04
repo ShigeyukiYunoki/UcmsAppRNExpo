@@ -19,7 +19,11 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "moc.ppasmcu",
-      "buildNumber": "1.0.0"
+      "buildNumber": "1.0.0",
+      "$comment": "下記ではAppStoreで日本語表記にならないのでInfo.plistに直接記述",
+      "infoPlist": {
+        "CFBundleDevelopmentRegion":"ja_JP"
+      }
     },
     "android": {
       "package": "moc.ppasmcu",
