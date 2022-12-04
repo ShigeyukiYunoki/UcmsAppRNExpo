@@ -1,12 +1,8 @@
+import "expo-dev-client";
 import "react-native-gesture-handler";
 import * as React from "react";
 import { useState, useEffect } from "react";
-import {
-  LogBox,
-  View,
-  Text,
-  Alert
-} from "react-native";
+import { LogBox, View, Text, Alert, Platform } from "react-native";
 import "react-native-get-random-values";
 import { CurrentRenderContext, NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -35,6 +31,15 @@ import {
   deleteDocumentDirectory
 } from "./components/Sql";
 import { useTwitter } from "react-native-simple-twitter";
+import {
+  AdsConsent,
+  AdsConsentDebugGeography,
+  AdsConsentStatus,
+  BannerAd,
+  BannerAdSize,
+  TestIds
+} from "react-native-google-mobile-ads";
+import * as Constants from "expo-constants";
 
 // import ignoreWarnings from "react-native-ignore-warnings";
 // ignoreWarnings("Setting a timer");
@@ -47,14 +52,43 @@ export default function App({}) {
     enableInExpoDevelopment: true, // falseとした場合、開発時のエラーは無視される
     debug: false, // 製品版ではfalseにする
   });
+  console.log(Constants.default.manifest.extra.TWITTER_CONSUMER_KEY);
+  const [nonPersonalizedOnly, setNonPersonalizedOnly] = useState(true);
+
+  useEffect(() => {
+    // ATTとGDPRの同意状態を取得
+    AdsConsent.requestInfoUpdate({
+      debugGeography: AdsConsentDebugGeography.EEA, // EU圏としてテストする設定
+      testDeviceIdentifiers: ["TEST-DEVICE-HASHED-ID"],
+    }).then(async (consentInfo) => {
+      let status = consentInfo.status;
+      if (
+        consentInfo.isConsentFormAvailable &&
+        status === AdsConsentStatus.REQUIRED
+      ) {
+        // 同意状態が必要な場合はダイアログを表示する
+        const result = await AdsConsent.showForm();
+        status = result.status;
+      }
+
+      if (
+        consentInfo.status === AdsConsentStatus.OBTAINED ||
+        status === AdsConsentStatus.OBTAINED
+      ) {
+        // 同意が取得できた場合はNonPersonalizedOnlyをfalseにする(トラッキング取得する)
+        setNonPersonalizedOnly(false);
+        console.log("ok");
+      }
+    });
+  }, []);
 
   useEffect(() => {
     const requestPermissionsAsync = async () => {
-      const { granted } = await Notifications.getPermissionsAsync();
-      if (granted) {
-        return;
-      }
-      await Notifications.requestPermissionsAsync();
+     const { granted } = await Notifications.getPermissionsAsync();
+     if (granted) {
+       return;
+     }
+     await Notifications.requestPermissionsAsync();
     };
     return () => requestPermissionsAsync();
   }, []);
@@ -211,6 +245,15 @@ export default function App({}) {
 
   const closeMenu = () => setVisible(false);
 
+  const adTestId = __DEV__
+    ? TestIds.BANNER
+    : process.env.AD_ID;
+
+  const adUnitID = Platform.select({
+    ios: process.env.AD_ID,
+  });
+
+
   return (
     <Provider>
       <NavigationContainer>
@@ -220,69 +263,77 @@ export default function App({}) {
             component={HomeScreen}
             options={{
               headerTitle: () => (
-                  <View>
-                    {user ? (
-                      <Menu
-                        visible={visible}
-                        onDismiss={closeMenu}
-                        style={{}}
-                        anchor={
-                          <View
-                            style={{
-                              flexDirection: "row",
-                              alignItems: "center",
-                              justifyContent: "center",
-                            }}
-                          >
-                            <Text style={{ fontWeight: "bold", fontSize: 16 }}>
-                              Home
-                            </Text>
-                            <Icon
-                              style={{ marginLeft: 20 }}
-                              name="navicon"
-                              type="evilicon"
-                              onPress={openMenu}
-                            />
-                          </View>
-                        }
-                      >
-                        <Menu.Item
-                          icon="alert-decagram"
-                          onPress={deleteUserData}
-                          title="退会"
-                        />
-                        <Divider />
-                        <Menu.Item
-                          onPress={handleLogout}
-                          icon="logout"
-                          title="ログアウト"
-                        />
-                      </Menu>
-                    ) : null}
-                    {!user ? (
-                      <View
-                        style={{
-                          flexDirection: "row",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                      >
-                        <Text style={{ fontWeight: "bold", fontSize: 16 }}>
-                          Home
-                        </Text>
-                      </View>
-                    ) : null}
-                    <TWModal />
-                  </View>
-                )
-              }
-            }
+                <View>
+                  {user ? (
+                    <Menu
+                      visible={visible}
+                      onDismiss={closeMenu}
+                      style={{}}
+                      anchor={
+                        <View
+                          style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <Text style={{ fontWeight: "bold", fontSize: 16 }}>
+                            Home
+                          </Text>
+                          <Icon
+                            style={{ marginLeft: 20 }}
+                            name="navicon"
+                            type="evilicon"
+                            onPress={openMenu}
+                          />
+                        </View>
+                      }
+                    >
+                      <Menu.Item
+                        icon="alert-decagram"
+                        onPress={deleteUserData}
+                        title="退会"
+                      />
+                      <Divider />
+                      <Menu.Item
+                        onPress={handleLogout}
+                        icon="logout"
+                        title="ログアウト"
+                      />
+                    </Menu>
+                  ) : null}
+                  {!user ? (
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Text style={{ fontWeight: "bold", fontSize: 16 }}>
+                        Home
+                      </Text>
+                    </View>
+                  ) : null}
+                  <TWModal />
+                </View>
+              ),
+            }}
           ></Stack.Screen>
           <Stack.Screen name="Calendar" component={CalendarScreen} />
           <Stack.Screen name="Users" component={UsersScreen} />
           <Stack.Screen name="UsersCalendar" component={UsersCalendarScreen} />
         </Stack.Navigator>
       </NavigationContainer>
+      <View>
+        <BannerAd
+          unitId={adUnitID}
+          size={BannerAdSize.FULL_BANNER}
+          requestOptions={{
+            requestNonPersonalizedAdsOnly: true,
+          }}
+        />
+      </View>
     </Provider>
   );
 }

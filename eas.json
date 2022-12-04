@@ -1,0 +1,52 @@
+{
+  "cli": {
+    "version": ">= 2.1.0"
+  },
+  "build": {
+    "development": {
+      "developmentClient": false,
+      "distribution": "internal",
+      "env": {
+        "REACT_APP_FIREBASE_API_KEY":"AIzaSyDxzgqbOSov6YaSjeA_V-_ebUf41CSFfec",
+        "REACT_APP_FIREBASE_AUTH_DOMAIN":"ucmsapp-97c77.firebaseapp.com",
+        "REACT_APP_FIREBASE_PROJECT_ID":"ucmsapp-97c77",
+        "REACT_APP_FIREBASE_STORAGE_BUCKET":"ucmsapp-97c77.appspot.com",
+        "REACT_APP_FIREBASE_MESSAGE_SENDER_ID":"580086054626",
+        "REACT_APP_FIREBASE_APP_ID":"1:580086054626:web:530a1aa72c1aeb3d1ae8bb",
+        "REACT_APP_FIREBASE_MEASUREMENT_ID":"G-E31LYH3D5T",
+        "TWITTER_CONSUMER_KEY":"NuSK8M6qn5lx4Rfr5c2HmnbLB",
+        "TWITTER_CONSUMER_SECRET":"KSFcnCCPqbbC6Vpn6jkv7BoK1TCfm8IehW1aVFjSbZJVL7VTrk",
+        "PROJECT_ID":"b34077c0-96bb-4a63-b78e-78c9b4c979b6",
+        "AD_ID":"ca-app-pub-6389398835875193~2739631520"
+      }
+    },
+    "preview": {
+      "distribution": "internal"
+    },
+    "production": {
+      "env": {
+        "REACT_APP_FIREBASE_API_KEY": "AIzaSyDxzgqbOSov6YaSjeA_V-_ebUf41CSFfec",
+        "REACT_APP_FIREBASE_AUTH_DOMAIN": "ucmsapp-97c77.firebaseapp.com",
+        "REACT_APP_FIREBASE_PROJECT_ID": "ucmsapp-97c77",
+        "REACT_APP_FIREBASE_STORAGE_BUCKET": "ucmsapp-97c77.appspot.com",
+        "REACT_APP_FIREBASE_MESSAGE_SENDER_ID": "580086054626",
+        "REACT_APP_FIREBASE_APP_ID": "1:580086054626:web:530a1aa72c1aeb3d1ae8bb",
+        "REACT_APP_FIREBASE_MEASUREMENT_ID": "G-E31LYH3D5T",
+        "TWITTER_CONSUMER_KEY": "NuSK8M6qn5lx4Rfr5c2HmnbLB",
+        "TWITTER_CONSUMER_SECRET": "KSFcnCCPqbbC6Vpn6jkv7BoK1TCfm8IehW1aVFjSbZJVL7VTrk",
+        "PROJECT_ID": "b34077c0-96bb-4a63-b78e-78c9b4c979b6",
+        "AD_ID": "ca-app-pub-6389398835875193~2739631520"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "appleId": "shigeyuki.ynk@gmail.com",
+        "ascAppId": "125606290",
+        "appleTeamId": "9C5QY7K59F",
+        "bundleIdentifier": "moc.ppasmcu"
+      }
+    }
+  }
+}

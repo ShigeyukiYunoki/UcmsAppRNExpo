@@ -216,142 +216,147 @@ const HomeScreen = ( ) => {
         scrollEnabled={scrollEnabled}
         onContentSizeChange={handleContentSizeChange}
       >
-        <View style={{ alignSelf: "center" }}>
-          <Text
-            style={{
-              fontSize: 30,
-              marginTop: 20,
-              marginBottom: 20,
-              alignSelf: "center",
-            }}
-          >
-            UcmsAppにようこそ
-          </Text>
-          <Text style={{ fontSize: 30, marginBottom: 10, alignSelf: "center" }}>
-            毎日の服薬記録で習慣化
-          </Text>
-
-          <DateTimePickerModal
-            isVisible={isDatePickerVisible}
-            mode="time"
-            onConfirm={handleConfirm}
-            confirmTextIOS={"この時刻に通知をうけとる"}
-            onCancel={hideDatePicker}
-            minimumDate={new Date()}
-          />
-          <TouchableOpacity
-            onPress={showDatePicker}
-            style={{
-              margin: 20,
-              padding: 10,
-              backgroundColor: "blue",
-              borderRadius: 10,
-            }}
-          >
-            <Icon name="clock" type="evilicon" color="white" size={60} />
+        <View style={{ flex: 1 }}>
+          <View style={{ alignSelf: "center", flex: 1 }}>
             <Text
               style={{
-                color: "white",
-                fontSize: 25,
+                fontSize: 30,
                 marginTop: 10,
+                // marginBottom: 20,
                 alignSelf: "center",
               }}
             >
-              通知時刻を選択
+              UcmsAppにようこそ
             </Text>
-          </TouchableOpacity>
-
-          {medtime ? (
-            <TouchableOpacity
-              onPress={async () => {
-                try {
-                  const notifications =
-                    await Notifications.getAllScheduledNotificationsAsync();
-                  console.log(notifications);
-                  Alert.alert("通知をキャンセル？", "", [
-                    {
-                      text: "する",
-                      onPress: async () => {
-                        try {
-                          await Notifications.cancelAllScheduledNotificationsAsync();
-                          deleteTakingMedicineAt();
-                          setMedtime("");
-                        } catch (e) {
-                          console.error("Error adding document: ", e);
-                        }
-                      },
-                      style: "cancel",
-                    },
-                    { text: "しない" },
-                  ]);
-                } catch (e) {
-                  console.error("Error adding document: ", e);
-                }
-              }}
-              style={{
-                padding: 5,
-                marginLeft: 60,
-                marginRight: 60,
-                marginBottom: 10,
-                backgroundColor: "#FF8A00",
-                borderRadius: 10,
-              }}
+            <Text
+              style={{ fontSize: 30, alignSelf: "center" }}
             >
-              <Text
-                style={{ color: "white", fontSize: 18, alignSelf: "center" }}
-              >
-                通知をキャンセル
-              </Text>
-            </TouchableOpacity>
-          ) : null}
-        </View>
-
-        <View
-          style={{
-            width: "100%",
-            flexDirection: "row",
-            justifyContent: "center",
-          }}
-        >
-          <TouchableOpacity
-            onPress={toUsers}
-            style={{
-              marginTop: 20,
-              padding: 10,
-              paddingLeft: 60,
-              paddingRight: 60,
-              backgroundColor: "#88cb7f",
-              borderRadius: 10,
-            }}
-          >
-            <Icon name="users" type="feather" color="white" size={50} />
-            <Text style={{ color: "white", fontSize: 22, marginTop: 10 }}>
-              ユーザー一覧
+              毎日の服薬記録で習慣化
             </Text>
-          </TouchableOpacity>
-        </View>
 
-        <View style={styles.text}>
-          {medtime ? (
+            <DateTimePickerModal
+              isVisible={isDatePickerVisible}
+              mode="time"
+              onConfirm={handleConfirm}
+              confirmTextIOS={"この時刻に通知をうけとる"}
+              onCancel={hideDatePicker}
+              minimumDate={new Date()}
+            />
             <TouchableOpacity
-              onPress={toCalendar}
+              onPress={showDatePicker}
               style={{
                 margin: 20,
                 padding: 10,
-                paddingLeft: 60,
-                paddingRight: 60,
-                backgroundColor: "green",
+                backgroundColor: "blue",
                 borderRadius: 10,
               }}
             >
-              <Icon name="calendar" type="evilicon" color="white" size={60} />
-              <Text style={{ color: "white", fontSize: 22, marginTop: 10 }}>
-                服薬の記録・確認
+              <Icon name="clock" type="evilicon" color="white" size={60} />
+              <Text
+                style={{
+                  color: "white",
+                  fontSize: 25,
+                  marginTop: 5,
+                  alignSelf: "center",
+                }}
+              >
+                通知時刻を選択
               </Text>
             </TouchableOpacity>
-          ) : null}
+
+            {medtime ? (
+              <TouchableOpacity
+                onPress={async () => {
+                  try {
+                    const notifications =
+                      await Notifications.getAllScheduledNotificationsAsync();
+                    console.log(notifications);
+                    Alert.alert("通知をキャンセル？", "", [
+                      {
+                        text: "する",
+                        onPress: async () => {
+                          try {
+                            await Notifications.cancelAllScheduledNotificationsAsync();
+                            deleteTakingMedicineAt();
+                            setMedtime("");
+                          } catch (e) {
+                            console.error("Error adding document: ", e);
+                          }
+                        },
+                        style: "cancel",
+                      },
+                      { text: "しない" },
+                    ]);
+                  } catch (e) {
+                    console.error("Error adding document: ", e);
+                  }
+                }}
+                style={{
+                  padding: 5,
+                  marginLeft: 60,
+                  marginRight: 60,
+                  // marginBottom: 10,
+                  backgroundColor: "#FF8A00",
+                  borderRadius: 10,
+                }}
+              >
+                <Text
+                  style={{ color: "white", fontSize: 18, alignSelf: "center" }}
+                >
+                  通知をキャンセル
+                </Text>
+              </TouchableOpacity>
+            ) : null}
+          </View>
+
+          <View
+            style={{
+              width: "100%",
+              flexDirection: "row",
+              justifyContent: "center",
+              flex: 1,
+            }}
+          >
+            <TouchableOpacity
+              onPress={toUsers}
+              style={{
+                marginTop: 20,
+                padding: 10,
+                paddingLeft: 60,
+                paddingRight: 60,
+                backgroundColor: "#88cb7f",
+                borderRadius: 10,
+              }}
+            >
+              <Icon name="users" type="feather" color="white" size={50} />
+              <Text style={{ color: "white", fontSize: 22, marginTop: 10 }}>
+                ユーザー一覧
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.text}>
+            {medtime ? (
+              <TouchableOpacity
+                onPress={toCalendar}
+                style={{
+                  marginTop: 5,
+                  padding: 10,
+                  paddingLeft: 60,
+                  paddingRight: 60,
+                  backgroundColor: "green",
+                  borderRadius: 10,
+                }}
+              >
+                <Icon name="calendar" type="evilicon" color="white" size={60} />
+                <Text style={{ color: "white", fontSize: 22, marginTop: 10 }}>
+                  服薬の記録・確認
+                </Text>
+              </TouchableOpacity>
+            ) : null}
+          </View>
+          <TWModal />
         </View>
-        <TWModal />
       </ScrollView>
     </SafeAreaView>
   );
@@ -364,13 +369,14 @@ const styles = StyleSheet.create({
   scrollview: {
     backgroundColor: "#fff",
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "center"
   },
   text: {
     alignItems: "center",
     padding: 10,
     fontSize: 24,
     fontWeight: "bold",
+    flex: 1
   },
 });
 
