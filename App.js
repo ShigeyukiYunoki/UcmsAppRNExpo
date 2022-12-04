@@ -39,7 +39,7 @@ import {
   BannerAdSize,
   TestIds
 } from "react-native-google-mobile-ads";
-
+import * as Constants from "expo-constants";
 
 // import ignoreWarnings from "react-native-ignore-warnings";
 // ignoreWarnings("Setting a timer");
@@ -52,7 +52,7 @@ export default function App({}) {
     enableInExpoDevelopment: true, // falseとした場合、開発時のエラーは無視される
     debug: false, // 製品版ではfalseにする
   });
-
+  console.log(Constants.default.manifest.extra.TWITTER_CONSUMER_KEY);
   const [nonPersonalizedOnly, setNonPersonalizedOnly] = useState(true);
 
   useEffect(() => {
@@ -84,11 +84,11 @@ export default function App({}) {
 
   useEffect(() => {
     const requestPermissionsAsync = async () => {
-      const { granted } = await Notifications.getPermissionsAsync();
-      if (granted) {
-        return;
-      }
-      await Notifications.requestPermissionsAsync();
+     const { granted } = await Notifications.getPermissionsAsync();
+     if (granted) {
+       return;
+     }
+     await Notifications.requestPermissionsAsync();
     };
     return () => requestPermissionsAsync();
   }, []);
@@ -247,10 +247,10 @@ export default function App({}) {
 
   const adTestId = __DEV__
     ? TestIds.BANNER
-    : "ca-app-pub-6389398835875193~2739631520";
+    : process.env.AD_ID;
 
   const adUnitID = Platform.select({
-    ios: "ca-app-pub-6389398835875193~2739631520",
+    ios: process.env.AD_ID,
   });
 
 

@@ -23,6 +23,8 @@
     "axios": "^0.26.0",
     "date-fns": "^2.28.0",
     "dayjs": "^1.11.0",
+    "dotenv": "^16.0.3",
+    "eas-cli": "^2.2.1",
     "expo": "~44.0.0",
     "expo-application": "~4.0.1",
     "expo-constants": "~13.0.1",
@@ -31,6 +33,7 @@
     "expo-file-system": "~13.1.4",
     "expo-notifications": "~0.14.0",
     "expo-sharing": "~10.1.0",
+    "expo-splash-screen": "~0.14.1",
     "expo-sqlite": "~10.1.0",
     "expo-status-bar": "~1.2.0",
     "expo-updates": "~0.11.7",
@@ -59,8 +62,7 @@
     "strftime": "^0.10.1",
     "sweetalert2": "^11.4.10",
     "sweetalert2-react-content": "^5.0.0",
-    "uuid": "^3.4.0",
-    "expo-splash-screen": "~0.14.1"
+    "uuid": "^3.4.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",
