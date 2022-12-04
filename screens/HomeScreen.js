@@ -221,15 +221,15 @@ const HomeScreen = ( ) => {
             <Text
               style={{
                 fontSize: 30,
-                marginTop: 20,
-                marginBottom: 20,
+                marginTop: 10,
+                // marginBottom: 20,
                 alignSelf: "center",
               }}
             >
               UcmsAppにようこそ
             </Text>
             <Text
-              style={{ fontSize: 30, marginBottom: 10, alignSelf: "center" }}
+              style={{ fontSize: 30, alignSelf: "center" }}
             >
               毎日の服薬記録で習慣化
             </Text>
@@ -256,7 +256,7 @@ const HomeScreen = ( ) => {
                 style={{
                   color: "white",
                   fontSize: 25,
-                  marginTop: 10,
+                  marginTop: 5,
                   alignSelf: "center",
                 }}
               >
@@ -295,7 +295,7 @@ const HomeScreen = ( ) => {
                   padding: 5,
                   marginLeft: 60,
                   marginRight: 60,
-                  marginBottom: 10,
+                  // marginBottom: 10,
                   backgroundColor: "#FF8A00",
                   borderRadius: 10,
                 }}
@@ -340,7 +340,7 @@ const HomeScreen = ( ) => {
               <TouchableOpacity
                 onPress={toCalendar}
                 style={{
-                  margin: 20,
+                  marginTop: 5,
                   padding: 10,
                   paddingLeft: 60,
                   paddingRight: 60,

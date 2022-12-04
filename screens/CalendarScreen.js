@@ -30,6 +30,7 @@ import {
   replaceDays,
   deleteMedicine,
 } from "../components/Sql";
+import Constants from "expo-constants";
 
 const CalendarScreen = ({ navigation }) => {
 
@@ -353,30 +354,31 @@ const CalendarScreen = ({ navigation }) => {
             <Text style={styles.text}>{max}</Text>
           </View>
           <View style={{ flex: 1 }}>
-            <Calendar monthFormat={"yyyy年 MM月"} markedDates={marks} />
-          </View>
-          <View style={{ flex: 1 }}>
             <TouchableOpacity
               onPress={showDialog}
               style={{
                 flexDirection: "row",
                 alignItems: "center",
-                padding: 5,
-                marginBottom: 5,
                 backgroundColor: "skyblue",
                 borderRadius: 10,
               }}
             >
               <SocialIcon
                 iconColor="white"
-                iconSize={18}
+                iconSize={15}
                 iconType="font-awesome"
                 type="twitter"
+                style={{
+                  marginLeft: 15
+                }}
               />
-              <Text style={{ color: "white", fontSize: 16 }}>
+              <Text style={{ color: "white", fontSize: 16, paddingLeft: 12 }}>
                 服薬記録をツイート
               </Text>
             </TouchableOpacity>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Calendar monthFormat={"yyyy年 MM月"} markedDates={marks} />
           </View>
         </View>
 
@@ -452,7 +454,7 @@ const styles = StyleSheet.create({
   },
   text: {
     alignItems: "center",
-    padding: 10,
+    padding: 3,
     fontSize: 24,
     fontWeight: "bold",
   },
