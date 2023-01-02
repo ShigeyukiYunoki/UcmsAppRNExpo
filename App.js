@@ -1,7 +1,7 @@
 import "expo-dev-client";
 import "react-native-gesture-handler";
 import * as React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { LogBox, View, Text, Alert, Platform } from "react-native";
 import "react-native-get-random-values";
 import { CurrentRenderContext, NavigationContainer } from "@react-navigation/native";
@@ -19,6 +19,7 @@ import {
   signOut,
   deleteUser,
 } from "firebase/auth";
+import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import * as Sentry from "sentry-expo";
 import { Icon } from "@rneui/themed";
@@ -53,8 +54,8 @@ export default function App({}) {
     debug: false, // 製品版ではfalseにする
   });
   console.log(Constants.default.manifest.extra.TWITTER_CONSUMER_KEY);
+  
   const [nonPersonalizedOnly, setNonPersonalizedOnly] = useState(true);
-
   useEffect(() => {
     // ATTとGDPRの同意状態を取得
     AdsConsent.requestInfoUpdate({
@@ -82,15 +83,43 @@ export default function App({}) {
     });
   }, []);
 
+  // useEffect(() => {
+  //   const requestPermissionsAsync = async () => {
+  //    const { granted } = await Notifications.getPermissionsAsync();
+  //    if (granted) {
+    //      return;
+    //    }
+  //    await Notifications.requestPermissionsAsync();
+  //   };
+  //   return () => requestPermissionsAsync();
+  // }, []);
+
+  const [expoPushToken, setExpoPushToken] = useState("");
+  const [notification, setNotification] = useState(false);
+  const notificationListener = useRef();
+  const responseListener = useRef();
+
   useEffect(() => {
-    const requestPermissionsAsync = async () => {
-     const { granted } = await Notifications.getPermissionsAsync();
-     if (granted) {
-       return;
-     }
-     await Notifications.requestPermissionsAsync();
+    registerForPushNotificationsAsync().then((token) =>
+      setExpoPushToken(token)
+    );
+
+    notificationListener.current =
+      Notifications.addNotificationReceivedListener((notification) => {
+        setNotification(notification);
+      });
+
+    responseListener.current =
+      Notifications.addNotificationResponseReceivedListener((response) => {
+        console.log(response);
+      });
+
+    return () => {
+      Notifications.removeNotificationSubscription(
+        notificationListener.current
+      );
+      Notifications.removeNotificationSubscription(responseListener.current);
     };
-    return () => requestPermissionsAsync();
   }, []);
 
   useEffect(() => {
@@ -102,6 +131,40 @@ export default function App({}) {
       }),
     });
   }, []);
+
+  async function  registerForPushNotificationsAsync () {
+      let token;
+      if (Platform.OS === "android") {
+        Notifications.setNotificationChannelAsync("default", {
+          name: "default",
+          importance: Notifications.AndroidImportance.MAX,
+          vibrationPattern: [0, 250, 250, 250],
+          lightColor: "#FF231F7C",
+        });
+      }
+
+      if (Device.isDevice) {
+        const { status: existingStatus } =
+          await Notifications.getPermissionsAsync();
+        let finalStatus = existingStatus;
+        if (existingStatus !== "granted") {
+          const { status } = await Notifications.requestPermissionsAsync();
+          finalStatus = status;
+        }
+        if (finalStatus !== "granted") {
+          alert("Failed to get push token for push notification!");
+          return;
+        }
+        const token = (await Notifications.getExpoPushTokenAsync()).data;
+        console.log(token);
+        this.setState({ expoPushToken: token });
+      } else {
+        alert("Must use physical device for Push Notifications");
+      }
+
+      return token;
+    };
+
 
   const Stack = createNativeStackNavigator();
 
