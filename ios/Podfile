@@ -2,10 +2,12 @@ require File.join(File.dirname(`node --print "require.resolve('expo/package.json
 require File.join(File.dirname(`node --print "require.resolve('react-native/package.json')"`), "scripts/react_native_pods")
 require File.join(File.dirname(`node --print "require.resolve('@react-native-community/cli-platform-ios/package.json')"`), "native_modules")
 
-platform :ios, '12.0'
-
 require 'json'
-podfile_properties = JSON.parse(File.read('./Podfile.properties.json')) rescue {}
+podfile_properties = JSON.parse(File.read(File.join(__dir__, 'Podfile.properties.json'))) rescue {}
+
+platform :ios, podfile_properties['ios.deploymentTarget'] || '16.1'
+install! 'cocoapods',
+  :deterministic_uuids => false
 
 target 'UcmsApp' do
   use_expo_modules!
@@ -13,19 +15,33 @@ target 'UcmsApp' do
 
   pod 'expo-dev-launcher', path: '../node_modules/expo-dev-launcher', :configurations => :debug
   pod 'expo-dev-menu', path: '../node_modules/expo-dev-menu', :configurations => :debug
+
+  use_frameworks! :linkage => podfile_properties['ios.useFrameworks'].to_sym if podfile_properties['ios.useFrameworks']
+
+  # Flags change depending on the env values.
+  flags = get_default_flags()
+
   use_react_native!(
     :path => config[:reactNativePath],
-    :hermes_enabled => podfile_properties['expo.jsEngine'] == 'hermes'
+    :hermes_enabled => podfile_properties['expo.jsEngine'] == 'hermes',
+    :fabric_enabled => flags[:fabric_enabled],
+    # An absolute path to your application root.
+    :app_path => "#{Pod::Config.instance.installation_root}/..",
+    #
+    # Uncomment to opt-in to using Flipper
+    # Note that if you have use_frameworks! enabled, Flipper will not work
+    # :flipper_configuration => !ENV['CI'] ? FlipperConfiguration.enabled : FlipperConfiguration.disabled,
   )
 
-  # Uncomment to opt-in to using Flipper
-  #
-  # if !ENV['CI']
-  #   use_flipper!('Flipper' => '0.75.1', 'Flipper-Folly' => '2.5.3', 'Flipper-RSocket' => '1.3.1')
-  # end
-
   post_install do |installer|
-    react_native_post_install(installer)
+    react_native_post_install(
+      installer,
+      # Set `mac_catalyst_enabled` to `true` in order to apply patches
+      # necessary for Mac Catalyst builds
+      :mac_catalyst_enabled => false
+    )
+    __apply_Xcode_12_5_M1_post_install_workaround(installer)
+
     # This is necessary for Xcode 14, because it signs resource bundles by default
     # when building for devices.
     installer.target_installation_results.pod_target_installation_results
@@ -36,7 +52,19 @@ target 'UcmsApp' do
         end
       end
     end
-    # Workaround `Cycle inside FBReactNativeSpec` error for react-native 0.64
+
+    installer.pods_project.build_configurations.each do |config|
+    if config.name.include?("Debug")
+      # Set optimization level for project
+      config.build_settings['GCC_OPTIMIZATION_LEVEL'] = '0'
+
+      # Add DEBUG to custom configurations containing 'Debug'
+      if !config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'].include? 'DEBUG=1'
+        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'DEBUG=1'
+      end
+    end
+  end
+  # Workaround `Cycle inside FBReactNativeSpec` error for react-native 0.64
     # Reference: https://github.com/software-mansion/react-native-screens/issues/842#issuecomment-812543933
     installer.pods_project.targets.each do |target|
       if (target.name&.eql?('FBReactNativeSpec'))
@@ -46,7 +74,7 @@ target 'UcmsApp' do
           end
         end
       end
-    end
+    end  
   end
 
   post_integrate do |installer|
@@ -56,5 +84,4 @@ target 'UcmsApp' do
       Pod::UI.warn e
     end
   end
-
 end

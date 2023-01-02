@@ -20,6 +20,12 @@ export default () => ({
       supportsTablet: false,
       bundleIdentifier: "moc.ppasmcu",
       buildNumber: "1.1.1",
+      userInterfaceStyle: "automatic",
+      // jsEngine: "jsc",
+      config: {
+        googleMobileAdsAppId: "ca-app-pub-6389398835875193~2739631520",
+        googleMobileAdsAutoInit: false,
+      },
     },
     android: {
       package: "moc.ppasmcu",
@@ -42,9 +48,16 @@ export default () => ({
           sound: "./assets/sound.wav",
         },
       ],
+      [
+        "expo-build-properties",
+        {
+          ios: {
+            deploymentTarget: "16.1",
+          },
+        }
+      ],
     ],
-    userInterfaceStyle: "automatic",
-    // jsEngine: "hermes",
+    jsEngine: "hermes",
     hooks: {
       postPublish: [
         {
