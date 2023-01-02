@@ -4,7 +4,6 @@
   },
   "build": {
     "development": {
-      "developmentClient": false,
       "distribution": "internal",
       "env": {
         "REACT_APP_FIREBASE_API_KEY":"AIzaSyDxzgqbOSov6YaSjeA_V-_ebUf41CSFfec",
@@ -21,7 +20,12 @@
       }
     },
     "preview": {
-      "distribution": "internal"
+      "developmentClient": true,
+      "distribution": "internal",
+      "ios": {
+        "enterpriseProvisioning": "universal",
+        "simulator": true
+      }
     },
     "production": {
       "env": {
