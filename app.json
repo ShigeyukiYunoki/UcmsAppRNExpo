@@ -55,7 +55,7 @@
           "config": {
             "organization": "ucmsapp",
             "project": "ucmsapp",
-            "authToken": "b313152b9d5a410792b2490eed55dad6bafa3935671e4b62b3b5f77d3ebd17c9"
+            "authToken": ""
           }
         }
       ]
@@ -63,12 +63,12 @@
     "userInterfaceStyle": "automatic",
     "extra": {
       "eas": {
-        "projectId": "b34077c0-96bb-4a63-b78e-78c9b4c979b6"
+        "projectId": ""
       }
     }
   },
   "react-native-google-mobile-ads": {
-    "ios_app_id": "ca-app-pub-6389398835875193~2739631520",
+    "ios_app_id": "",
     "delay_app_measurement_init": true,
     "user_tracking_usage_description": "許可することで、より関連性の高い広告を表示することができるようになります"
   }
