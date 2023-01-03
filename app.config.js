@@ -53,7 +53,7 @@ export default () => ({
             organization: "ucmsapp",
             project: "ucmsapp",
             authToken:
-              "b313152b9d5a410792b2490eed55dad6bafa3935671e4b62b3b5f77d3ebd17c9",
+              "",
           },
         },
       ],
@@ -74,7 +74,7 @@ export default () => ({
       TWITTER_CONSUMER_SECRET: process.env.TWITTER_CONSUMER_SECRET,
       AD_ID: process.env.AD_ID,
       eas: {
-        projectId: "b34077c0-96bb-4a63-b78e-78c9b4c979b6",
+        projectId: "",
       },
     },
   },
