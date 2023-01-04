@@ -43,40 +43,59 @@ const HomeScreen = ( ) => {
   const sqldb = SQLite.openDatabase("db");
 
   useEffect(() => {
-    const strftime = require("strftime");
-    // var strftime = require("strftime")ではダメ
-    Notifications.cancelAllScheduledNotificationsAsync();
-    sqldb.transaction((tx) => {
-      tx.executeSql(
-        `select TakingMedicineAt from Users where id = 1`,
-        [],
-        (_tx, results) => {
-          const med = results.rows.item(0).TakingMedicineAt;
-          // console.log(med);
-          const m = strftime("%B %d, %Y %H:%M:%S", new Date(med));
-          const m_hour = Number(strftime("%H", new Date(m)));
-          const m_minute = Number(strftime("%M", new Date(m)));
-          Notifications.scheduleNotificationAsync({
-            content: {
-              body: "服薬を記録して、一緒に習慣化しましょう！",
-              title: "UcmsApp",
-              subtitle: "今日の服薬はおわりましたか？",
-              sound: "sound.wav"
+      const strftime = require("strftime");
+      // var strftime = require("strftime")ではダメ
+      async function cancel() {
+        await Notifications.cancelAllScheduledNotificationsAsync();
+      }
+      cancel();
+      // (async () => {
+      //   await Notifications.cancelAllScheduledNotificationsAsync();
+      // })(),
+        sqldb.transaction((tx) => {
+          tx.executeSql(
+            `select TakingMedicineAt from Users where id = 1`,
+            [],
+            (_tx, results) => {
+              const med = results.rows.item(0).TakingMedicineAt;
+              console.log(med);
+              //  const m = strftime("%B %d, %Y %H:%M:%S", new Date(med));
+              let m_hour = strftime("%H", new Date(med));
+              let m_minute = strftime("%M", new Date(med));
+              //  console.log(m);
+              console.log(m_hour);
+              console.log(m_minute);
+              const n_hour = Number(m_hour);
+              const n_minute = Number(m_minute);
+              //  console.log(n_hour);
+              //  console.log(n_minute);
+              console.log('isNaN("n_hour") = ' + isNaN(n_hour));
+              async function notification(n_hour, n_minute) {
+                await Notifications.scheduleNotificationAsync({
+                  content: {
+                    body: "服薬を記録して、一緒に習慣化しましょう！",
+                    title: "UcmsApp",
+                    subtitle: "今日の服薬はおわりましたか？",
+                    sound: "sound.wav",
+                  },
+                  trigger: {
+                    hour: n_hour,
+                    minute: n_minute,
+                    repeats: true,
+                  },
+                });
+              }
+              notification(n_hour, n_minute);
+              setMedtime(med);
             },
-            trigger: {
-              hour: m_hour,
-              minute: m_minute,
-              repeats: true,
-            },
-          });
-          setMedtime(med);
-        },
-        () => {
-          console.log("select TakingMedicineAt faile");
-        }
-      );
-    });
-  }, [medtime]);
+            () => {
+              console.log("select TakingMedicineAt faile");
+            }
+          );
+        });
+    },
+    [medtime]
+  );
 
   useEffect(() => {
     createTable();
@@ -136,7 +155,7 @@ const HomeScreen = ( ) => {
     const strftime = require("strftime");
     const takingMedicineTime = strftime("%H:%M", time);
     setMedtime(takingMedicineTime);
-    createTable();
+    // createTable();
     Alert.alert(takingMedicineTime, "にお知らせします", [
       {
         onPress: async () => {
@@ -173,7 +192,7 @@ const HomeScreen = ( ) => {
     },
   });
 
-  const onTwitterLoginSuccess = async (user, accessToken) => {
+  const onTwitterLoginSuccess = async (_user, accessToken) => {
     const credential = TwitterAuthProvider.credential(
       accessToken.oauth_token,
       accessToken.oauth_token_secret
@@ -199,7 +218,7 @@ const HomeScreen = ( ) => {
   }, []);
 
   const [ctxHeight, setCtxHeight] = useState(0);
-  const handleContentSizeChange = (contentWidth, contentHeight) => {
+  const handleContentSizeChange = (_contentWidth, contentHeight) => {
     setCtxHeight(contentHeight);
   };
   const window = useWindowDimensions();

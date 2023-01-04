@@ -4,7 +4,7 @@ export default () => ({
   expo: {
     name: "UcmsApp",
     slug: "UcmsApp",
-    version: "1.0.0",
+    version: "0.0.0",
     orientation: "portrait",
     icon: "./assets/icon.png",
     splash: {
@@ -18,8 +18,8 @@ export default () => ({
     assetBundlePatterns: ["**/*"],
     ios: {
       supportsTablet: false,
-      bundleIdentifier: "moc.ppasmcu",
-      buildNumber: "1.1.1",
+      userInterfaceStyle: "automatic",
+      // jsEngine: "jsc",
     },
     android: {
       package: "moc.ppasmcu",
@@ -42,9 +42,16 @@ export default () => ({
           sound: "./assets/sound.wav",
         },
       ],
+      [
+        "expo-build-properties",
+        {
+          ios: {
+            deploymentTarget: "16.1",
+          },
+        },
+      ],
     ],
-    userInterfaceStyle: "automatic",
-    // jsEngine: "hermes",
+    jsEngine: "hermes",
     hooks: {
       postPublish: [
         {
@@ -52,8 +59,7 @@ export default () => ({
           config: {
             organization: "ucmsapp",
             project: "ucmsapp",
-            authToken:
-              "b313152b9d5a410792b2490eed55dad6bafa3935671e4b62b3b5f77d3ebd17c9",
+            authToken: process.env.SENTRY_AUTH,
           },
         },
       ],
