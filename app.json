@@ -1,4 +1,7 @@
 {
+  "$comment": [
+    "error: ios_app_id key not found in react-native-google-mobile-ads key in app.json. App will crash without it."
+  ],
   "react-native-google-mobile-ads": {
     "ios_app_id": "ca-app-pub-6389398835875193~2739631520",
     "delay_app_measurement_init": true,
